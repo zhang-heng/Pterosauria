@@ -13,14 +13,14 @@ PID;
 static PID sPID;
 static PID *sptr = &sPID;
 
-void IncPIDInit(void)
+void IncPIDInit(double p, double i, double d)
 {
   sptr->SumError = 0;
   sptr->LastError = 0; //Error[-1]
   sptr->PrevError = 0; //Error[-2]
-  sptr->Proportion = 0; //比例常数 Proportional Const
-  sptr->Integral = 0; //积分常数Integral Const
-  sptr->Derivative = 0; //微分常数 Derivative Const
+  sptr->Proportion = p; //比例常数 Proportional Const
+  sptr->Integral = i; //积分常数Integral Const
+  sptr->Derivative = d; //微分常数 Derivative Const
   sptr->SetPoint = 0;
 }
 
