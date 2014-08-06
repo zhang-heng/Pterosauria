@@ -13,7 +13,7 @@ PID;
 static PID sPID;
 static PID *sptr = &sPID;
 
-void IncPIDInit(double p, double i, double d)
+void IncPIDInit(double p, double i, double d, int point)
 {
   sptr->SumError = 0;
   sptr->LastError = 0; //Error[-1]
@@ -21,7 +21,7 @@ void IncPIDInit(double p, double i, double d)
   sptr->Proportion = p; //比例常数 Proportional Const
   sptr->Integral = i; //积分常数Integral Const
   sptr->Derivative = d; //微分常数 Derivative Const
-  sptr->SetPoint = 0;
+  sptr->SetPoint = point;
 }
 
 int IncPIDCalc(int NextPoint)
@@ -38,5 +38,11 @@ int IncPIDCalc(int NextPoint)
   return(iIncpid);
 }
 
+void SetPID(double p, double i, double d)
+{
+  sptr->Proportion = p; //比例常数 Proportional Const
+  sptr->Integral = i; //积分常数Integral Const
+  sptr->Derivative = d; //微分常数 Derivative Const
+}
 
 

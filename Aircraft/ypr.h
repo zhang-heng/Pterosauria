@@ -1,18 +1,45 @@
-#include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+#include <I2Cdev.h>
+#include <MPU6050_6Axis_MotionApps20.h>
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
-
+#endif
 MPU6050 mpu;
+uint16_t packetSize;
+
+uint8_t mpuIntStatus ;
+uint8_t fifoCount;
+Quaternion q;
+VectorFloat gravity; 
+uint8_t fifoBuffer[64];
+
+volatile bool mpuInterrupt = false; 
+void dmpDataReady() {
+  mpuInterrupt = true;
+}
+
+void initYPR()
+{
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+  Wire.begin();
+  TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
+#elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+  Fastwire::setup(400, true);
+#endif
+  mpu.initialize();
+  mpu.setXGyroOffset(220);
+  mpu.setYGyroOffset(76);
+  mpu.setZGyroOffset(-85);
+  mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+  mpu.setDMPEnabled(true);
+  mpuIntStatus = mpu.getIntStatus();
+  packetSize = mpu.dmpGetFIFOPacketSize();
+}
 
 void GetYPR(float * pYPR)
 {
+  while(!mpuInterrupt && fifoCount < packetSize) {};
+  fifoCount = mpu.getFIFOCount();
   float ypr[3]; 
-  uint8_t mpuIntStatus = mpu.getIntStatus();
-  uint8_t fifoCount = mpu.getFIFOCount();
-  uint16_t packetSize =mpu.dmpGetFIFOPacketSize(); 
-  Quaternion q;
-  VectorFloat gravity; 
-  uint8_t fifoBuffer[64];
 
   if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
     mpu.resetFIFO();
@@ -33,5 +60,11 @@ void GetYPR(float * pYPR)
     pYPR[2] = ypr[2] * 180/M_PI;
   }
 }
+
+
+
+
+
+
 
 

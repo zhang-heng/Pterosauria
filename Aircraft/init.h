@@ -1,4 +1,5 @@
 #include "control.h"
+#include "ypr.h"
 
 void UnlockMotor()
 {
@@ -35,4 +36,5 @@ void InitConfiguration()
 
   Serial.print(F("Testing motor PWM.. \n"));
   UnlockMotor();
+  initYPR();
 }

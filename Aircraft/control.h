@@ -1,9 +1,9 @@
 #include "Arduino.h"
 
 //四轴管脚定义
-#define PIN_FRONT 3
-#define PIN_AFTER 9
-#define PIN_LEFT  10
+#define PIN_FRONT 10
+#define PIN_AFTER 3
+#define PIN_LEFT  9
 #define PIN_RIGHT 11
 //当前的四轴油门值
 #define SET_FRONT 0
@@ -38,16 +38,18 @@ void SetYaw(int v) //C
 
 void SetPitch(int v) //->
 {
-  PinsPwm[SET_FRONT] = LevelPwm + v;
-  PinsPwm[SET_AFTER] = LevelPwm + v;
-  analogWrite(SET_FRONT,PinsPwm[SET_FRONT]);
-  analogWrite(SET_AFTER,PinsPwm[SET_AFTER]);
+  PinsPwm[SET_FRONT] = LevelPwm - v/2;
+  PinsPwm[SET_AFTER] = LevelPwm + v/2;
+  analogWrite(PIN_FRONT,PinsPwm[SET_FRONT]);
+  analogWrite(PIN_AFTER,PinsPwm[SET_AFTER]);
 }
 
 void SetRoll(int v) //T
 {
-  PinsPwm[SET_LEFT] = LevelPwm + v;
-  PinsPwm[SET_RIGHT] = LevelPwm + v;
+  PinsPwm[SET_LEFT] = LevelPwm;
+  PinsPwm[SET_RIGHT] = LevelPwm;
+  if (v<0) PinsPwm[SET_LEFT] = LevelPwm;
+  if (v<0) PinsPwm[SET_RIGHT] = LevelPwm;
   analogWrite(SET_LEFT,PinsPwm[SET_LEFT]);
   analogWrite(SET_RIGHT,PinsPwm[SET_RIGHT]);
 }
