@@ -1,48 +1,63 @@
-typedef struct PID
+class Cpid
 {
+private:
   int SetPoint; //设定目标 Desired Value
   long SumError; //误差累计
+  int LastError; //Error[-1]
+  int PrevError; //Error[-2]
   double Proportion; //比例常数 Proportional Const
   double Integral; //积分常数 Integral Const
   double Derivative; //微分常数 Derivative Const
-  int LastError; //Error[-1]
-  int PrevError; //Error[-2]
-} 
-PID;
+public :
+  Cpid(double p, double i, double d, int point)
+  {
+    SumError = 0;
+    LastError = 0; 
+    PrevError = 0; 
+    Proportion = p; 
+    Integral = i; 
+    Derivative = d; 
+    SetPoint = point;
+  }
+  
+  void ReSet()
+  {
+    SumError = 0;
+    LastError = 0; 
+    PrevError = 0; 
+    SetPoint = 0;
+  }
 
-static PID sPID;
-static PID *sptr = &sPID;
+  int IncPIDCalc(int NextPoint)
+  {
+    register int iError, iIncpid; //当前误差
+    iError = SetPoint - NextPoint; //增量计算
+    //E[k]项 -//E[k－1]项 +//E[k－2]项
+    iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError; 
+    //存储误差，用于下次计算
+    PrevError = LastError;
+    LastError = iError;
+    //返回增量值
+    return(iIncpid);
+  }
+  void ReSetPID(double p, double i, double d)
+  {
+    Proportion = p;
+    Integral = i;
+    Derivative = d;
+  }
+};
 
-void IncPIDInit(double p, double i, double d, int point)
-{
-  sptr->SumError = 0;
-  sptr->LastError = 0; //Error[-1]
-  sptr->PrevError = 0; //Error[-2]
-  sptr->Proportion = p; //比例常数 Proportional Const
-  sptr->Integral = i; //积分常数Integral Const
-  sptr->Derivative = d; //微分常数 Derivative Const
-  sptr->SetPoint = point;
-}
 
-int IncPIDCalc(int NextPoint)
-{
-  register int iError, iIncpid; //当前误差
-  iError = sptr->SetPoint - NextPoint; //增量计算
-  iIncpid = sptr->Proportion * iError //E[k]项
-  - sptr->Integral * sptr->LastError //E[k－1]项
-  + sptr->Derivative * sptr->PrevError; //E[k－2]项
-  //存储误差，用于下次计算
-  sptr->PrevError = sptr->LastError;
-  sptr->LastError = iError;
-  //返回增量值
-  return(iIncpid);
-}
 
-void SetPID(double p, double i, double d)
-{
-  sptr->Proportion = p; //比例常数 Proportional Const
-  sptr->Integral = i; //积分常数Integral Const
-  sptr->Derivative = d; //微分常数 Derivative Const
-}
+
+
+
+
+
+
+
+
+
 
 
