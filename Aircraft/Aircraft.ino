@@ -1,18 +1,14 @@
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
-
+#include <EEPROM.h>
 #include "control.h"
-
-double pp = 0;
-double ii = 0;
-double dd = 0;
 
 Ccontrol * pControl;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(115200); 
   while (Serial.available() && Serial.read());
   if (pControl) delete pControl;
   pControl =  new Ccontrol(10, 3, 9, 11);
@@ -22,51 +18,39 @@ void setup()
 void loop()
 {
   pControl-> Motor();
-  pControl->SetPitch(pp,ii,dd,0);
   int val = Serial.read();
   if (val == 's')
     pControl->UnlockMotor();
-    
-  else if (val == '1')
-    pControl->Start();
-  else if (val == 'q')
-    pControl->Stop();
-    
-  else if (val == '2')
-    pp += 0.01;
-  else if (val == 'w')
-    pp -= 0.01;
-    
-  else if (val == '3')
-    ii += 0.01;
-  else if (val == 'e')
-    ii -= 0.01;
-    
-  else if (val == '4')
-    dd += 0.01;
-  else if (val == 'r')
-    dd -= 0.01;
 
-  //  float ypr[3];
-  //  GetYPR(&ypr[0]);
-  //  int next =  0;//IncPIDCalc(ypr[1]);
-  //  //SetPID(pp,ii,dd);
-  //  Serial.print("pitch:\t");
-  //  Serial.print(ypr[1]);
-  //  Serial.print("\tlevel:\t");
-  //  Serial.print(next);
-  //  Serial.print("\tnext:\t");
-  //  Serial.print(LevelPwm);
-  //  Serial.print("\tfront:\t");
-  //  Serial.print(PinsPwm[SET_FRONT]);
-  //  Serial.print("\tafter:\t");
-  //  Serial.print(PinsPwm[SET_AFTER]);
-  Serial.print("\tpid:\t");
-  Serial.print(pp);
-  Serial.print("\t");
-  Serial.print(ii);
-  Serial.print("\t");
-  Serial.print(dd);
-  Serial.print("\t");
-  Serial.print("\n"); 
+  else if (val == '1') pControl->Start();
+  else if (val == 'q') pControl->Stop();
+  else if (val == '2') pControl->configPID.PitchP += 0.1;
+  else if (val == 'w') pControl->configPID.PitchP -= 0.1;
+  else if (val == '3') pControl->configPID.PitchI += 0.1;
+  else if (val == 'e') pControl->configPID.PitchI -= 0.1;
+  else if (val == '4') pControl->configPID.PitchD += 0.1;
+  else if (val == 'r') pControl->configPID.PitchD -= 0.1;
+
+  else if (val == '5') pControl->configPID.RollP += 0.1;
+  else if (val == 't') pControl->configPID.RollP -= 0.1;
+  else if (val == '6') pControl->configPID.RollI += 0.1;
+  else if (val == 'y') pControl->configPID.RollI -= 0.1;
+  else if (val == '7') pControl->configPID.RollD += 0.1;
+  else if (val == 'u') pControl->configPID.RollD -= 0.1;
+
+  else if (val == '8') pControl->configPID.YawP += 0.1;
+  else if (val == 'i') pControl->configPID.YawP -= 0.1;
+  else if (val == '9') pControl->configPID.YawI += 0.1;
+  else if (val == 'o') pControl->configPID.YawI -= 0.1;
+  else if (val == '0') pControl->configPID.YawD += 0.1;
+  else if (val == 'p') pControl->configPID.YawD -= 0.1;
+
+  else if (val == '=') pControl->AddSpeed();
+  else if (val == '-') pControl->SubtractSpeed();
+
+  else if (val == 'c')
+    pControl->SaveConfig();
+
+  else if (val == 'b')
+    pControl->BalanceAdjust();
 }

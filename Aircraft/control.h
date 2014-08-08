@@ -3,198 +3,267 @@
 #include "ypr.h"
 #include "barometer.h"
 #include "compass.h"
+#include "config.h"
 
 #define MIN_SERVO 120
 #define ACK_SERVO 140
 #define MAX_SERVO 250
 
 #define MIN_SPEED 0
-#define MAX_SPEED 10000
+#define MAX_SPEED 200000
 
 class Ccontrol
 {
-private:
-  int PIN_FRONT;
-  int PIN_AFTER;
-  int PIN_LEFT;
-  int PIN_RIGHT;
+  private:
+    int PIN_FRONT;
+    int PIN_AFTER;
+    int PIN_LEFT;
+    int PIN_RIGHT;
 
-  float PinsPwm[4];
-  const int FRONT = 0;
-  const int AFTER = 1;
-  const int LEFT = 2;
-  const int RIGHT = 3;
-  bool b_unlockMotor;
-  bool b_Starting = false;
-  CdelayHandle *pUnlockMotorDelay = NULL;
-  Cypr *m_ypr = NULL;
-  Cbarometer * m_barometer = NULL;
-  Ccompass * m_compass = NULL;
-  Cpid *m_PitchPID = NULL;
-  Cpid *m_RollPID = NULL;
-  Cpid *m_YawPID = NULL;
-  Cpid *m_ElevationPID = NULL;
+    long Speeds[4];
+    const int FRONT = 0;
+    const int AFTER = 1;
+    const int LEFT = 2;
+    const int RIGHT = 3;
+    bool b_unlockMotor;
+    bool b_Starting = false;
+    CdelayHandle *pUnlockMotorDelay = NULL;
+    Cypr *m_ypr = NULL;
+    Cbarometer * m_barometer = NULL;
+    Ccompass * m_compass = NULL;
+    Cpid *m_PitchPID = NULL;
+    Cpid *m_RollPID = NULL;
+    Cpid *m_YawPID = NULL;
+    Cpid *m_ElevationPID = NULL;
 
-  void WriteAllControlPwmPin(int f, int a, int l, int r)
-  {
-    analogWrite(PIN_FRONT, f);
-    analogWrite(PIN_AFTER, a);
-    analogWrite(PIN_LEFT, l);
-    analogWrite(PIN_RIGHT, r);
-  }
-
-  void SetPins()
-  {
-    for (int i = 0; i < 4; i++)
+    void WriteAllControlPwmPin(int f, int a, int l, int r)
     {
-      if (PinsPwm[i] > MAX_SPEED) PinsPwm[i] = MAX_SPEED;
-      if (PinsPwm[i] < MIN_SPEED) PinsPwm[i] = MIN_SPEED;
+      analogWrite(PIN_FRONT, f);
+      analogWrite(PIN_AFTER, a);
+      analogWrite(PIN_LEFT, l);
+      analogWrite(PIN_RIGHT, r);
     }
-    WriteAllControlPwmPin(
-    map(PinsPwm[FRONT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-    map(PinsPwm[AFTER], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-    map(PinsPwm[LEFT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-    map(PinsPwm[RIGHT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO));
-  }
 
-public:
-  Ccontrol(int pinFront, int pinAfter, int pinLeft, int pinRight)
-  {
-    PIN_FRONT = pinFront;
-    PIN_AFTER = pinAfter;
-    PIN_LEFT = pinLeft;
-    PIN_RIGHT = pinRight;
-    m_ypr = new Cypr();
-    m_barometer = new Cbarometer();
-    m_compass =  new Ccompass();
-    m_PitchPID =  new Cpid(0, 0, 0, 0);
-    m_RollPID =  new Cpid(0, 0, 0, 0);
-    m_YawPID =  new Cpid(0, 0, 0, 0);
-    m_ElevationPID =  new Cpid(0, 0, 0, 0);
-  }
-
-  ~Ccontrol()
-  {
-  }
-
-  void Init()
-  {
-    pinMode(PIN_FRONT, OUTPUT);
-    pinMode(PIN_AFTER, OUTPUT);
-    pinMode(PIN_LEFT, OUTPUT);
-    pinMode(PIN_RIGHT, OUTPUT);
-    m_ypr->Init();
-  }
-
-  //校准平衡数据
-  void Adjust(double pitch, double roll, double yaw, double elevation)
-  {
-  }
-
-  bool UnlockMotor()
-  {
-    if (b_Starting) return false;
-    if (!pUnlockMotorDelay)
+    void SetPins()
     {
-      pUnlockMotorDelay = new CdelayHandle((void*)this);
-      pUnlockMotorDelay->AddHandle(0, [](void * pUser) {
-        Ccontrol* p = (Ccontrol*) pUser;
-        p->SetAllValue(MIN_SERVO);
-        Serial.println("low level motor");
+      for (int i = 0; i < 4; i++)
+      {
+        if (Speeds[i] > MAX_SPEED) Speeds[i] = MAX_SPEED;
+        if (Speeds[i] < MIN_SPEED) Speeds[i] = MIN_SPEED;
       }
-      );
-      pUnlockMotorDelay->AddHandle(2000, [](void * pUser) {
-        Ccontrol* p = (Ccontrol*) pUser;
-        p->SetAllValue(ACK_SERVO);
-        Serial.println("normal level motor");
-      }
-      );
-      pUnlockMotorDelay->AddHandle(4000, [](void * pUser) {
-        Ccontrol* p = (Ccontrol*) pUser;
-        p->SetAllValue(ACK_SERVO - 3);
-        p->b_unlockMotor = true;
-        delete p->pUnlockMotorDelay;
-        p->pUnlockMotorDelay = 0;
-        Serial.println("unlocking motor finish\n");
-      }
-      );
+      WriteAllControlPwmPin(
+        map(Speeds[FRONT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
+        map(Speeds[AFTER], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
+        map(Speeds[LEFT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
+        map(Speeds[RIGHT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO));
     }
-  }
 
-  void Start()
-  {
-    if (!b_unlockMotor) return;
-    b_Starting = true;
-    SetAllValue(ACK_SERVO);
-    Serial.println("Start");
-  }
-
-  void Stop()
-  {
-    b_Starting = false;
-    SetAllValue(MIN_SERVO);
-    Serial.println("Stop");
-  }
-
-  void SetAllValue(int v)
-  {
-    WriteAllControlPwmPin(v, v, v, v);
-  }
-
-  void SetPitch()
-  {
-    float v = m_ypr->GetPitchPoint();
-    Serial.print("pitch:  ");
-    Serial.print(v);
-    v = m_PitchPID->IncPIDCalc(v);
-    Serial.print("  pitchPID:  ");
-    Serial.print(v);
-    PinsPwm[FRONT] -= (float)v/1000;
-    PinsPwm[AFTER] += (float)v/1000;
-    SetPins();
-  }
-
-  void SetPitch(float pp, float ii, float dd, float tt)
-  {
-    m_PitchPID->ReSetPID(pp, ii, dd);
-    m_PitchPID->ReSetPoint(tt);
-  }
-
-  void SetRoll()
-  {
-    float v = m_ypr->GetPitchPoint();
-    PinsPwm[LEFT] -= v;
-    PinsPwm[RIGHT] += v;
-    SetPins();
-  }
-
-  void SetYaw()
-  {
-    float v = m_compass->GetPoint();
-    PinsPwm[FRONT] -= v;
-    PinsPwm[AFTER] -= v;
-    PinsPwm[LEFT] += v;
-    PinsPwm[RIGHT] += v;
-    SetPins();
-  }
-
-  void SetElevation()
-  {
-    float v = m_barometer->GetPoint();
-    PinsPwm[FRONT] += v;
-    PinsPwm[AFTER] += v;
-    PinsPwm[LEFT] += v;
-    PinsPwm[RIGHT] += v;
-    SetPins();
-  }
-
-  void Motor()
-  {
-    if (pUnlockMotorDelay) pUnlockMotorDelay->Handle();
-
-    if (b_Starting)
+  public:
+    StructConfig configPID;
+    Ccontrol(int pinFront, int pinAfter, int pinLeft, int pinRight)
     {
-      SetPitch();
+      PIN_FRONT = pinFront;
+      PIN_AFTER = pinAfter;
+      PIN_LEFT = pinLeft;
+      PIN_RIGHT = pinRight;
+      m_ypr = new Cypr();
+      m_barometer = new Cbarometer();
+      m_compass =  new Ccompass();
     }
-  }
+
+    ~Ccontrol()
+    {
+    }
+
+    void Init()
+    {
+      pinMode(PIN_FRONT, OUTPUT);
+      pinMode(PIN_AFTER, OUTPUT);
+      pinMode(PIN_LEFT, OUTPUT);
+      pinMode(PIN_RIGHT, OUTPUT);
+      ReadRom(&configPID);
+      m_PitchPID =  new Cpid(configPID.PitchP, configPID.PitchI, configPID.PitchD, 0);
+      m_RollPID =  new Cpid(configPID.RollP, configPID.RollI, configPID.RollD, 0);
+      m_YawPID =  new Cpid(configPID.YawP, configPID.YawI, configPID.YawP, 0);
+      m_ElevationPID =  new Cpid(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD, 0);
+      m_ypr->Init();
+    }
+
+    void SaveConfig()
+    {
+      WriteRom(&configPID);
+    }
+
+    void BalanceAdjust()
+    {
+      float p = m_ypr->GetPitchPoint();
+      float r = m_ypr->GetRollPoint();
+      float y = m_ypr->GetYawPoint();
+      for (int i = 0 ; i < 100; i++)
+      {
+        p = (p + m_ypr->GetPitchPoint()) / 2;
+        r = (r + m_ypr->GetRollPoint()) / 2;
+        y = (y + m_ypr->GetYawPoint()) / 2;
+        delay(10);
+      }
+      configPID.BalancePitch = p;
+      configPID.BalanceRoll = r;
+      configPID.BalanceYaw = y;
+    }
+
+    void TrimmingTarget(double pitch, double roll, double yaw, double elevation)
+    {
+
+    }
+
+    bool UnlockMotor()
+    {
+      if (b_Starting) return false;
+      if (!pUnlockMotorDelay)
+      {
+        pUnlockMotorDelay = new CdelayHandle((void*)this);
+        pUnlockMotorDelay->AddHandle(0, [](void * pUser) {
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(MIN_SERVO);
+          Serial.println("low level motor");
+        });
+        pUnlockMotorDelay->AddHandle(2000, [](void * pUser) {
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(ACK_SERVO);
+          Serial.println("normal level motor");
+        });
+        pUnlockMotorDelay->AddHandle(4000, [](void * pUser) {
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(ACK_SERVO - 3);
+          p->b_unlockMotor = true;
+          delete p->pUnlockMotorDelay;
+          p->pUnlockMotorDelay = 0;
+          Serial.println("unlocking motor finish\n");
+        });
+      }
+    }
+
+    void Start()
+    {
+      if (!b_unlockMotor) return;
+      b_Starting = true;
+      for (int i = 0; i < 4; i++)
+        Speeds[i] = MIN_SPEED;
+      Serial.println("Start");
+    }
+
+    void Stop()
+    {
+      b_Starting = false;
+      SetAllValue(MIN_SERVO);
+      Serial.println("Stop");
+    }
+
+    void SetAllValue(int v)
+    {
+      WriteAllControlPwmPin(v, v, v, v);
+    }
+
+    void SetPitch(float v)
+    {
+      v = m_PitchPID->IncPIDCalc(v);
+      Speeds[FRONT] -= v;
+      Speeds[AFTER] += v;
+    }
+
+    void SetPitch(float pp, float ii, float dd, float tt)
+    {
+      m_PitchPID->ReSetPID(pp, ii, dd);
+      m_PitchPID->ReSetPoint(tt);
+    }
+
+    void SetRoll(float v)
+    {
+      v = m_RollPID->IncPIDCalc(v);
+      Speeds[LEFT] -= v;
+      Speeds[RIGHT] += v;
+    }
+
+    void SetYaw(float v)
+    {
+      v = m_YawPID->IncPIDCalc(v);
+      Speeds[FRONT] -= v;
+      Speeds[AFTER] -= v;
+      Speeds[LEFT] += v;
+      Speeds[RIGHT] += v;
+    }
+
+    void SetElevation()
+    {
+      float v = m_barometer->GetPoint();
+      Speeds[FRONT] += v;
+      Speeds[AFTER] += v;
+      Speeds[LEFT] += v;
+      Speeds[RIGHT] += v;
+      SetPins();
+    }
+
+    void AddSpeed()
+    {
+      Speeds[FRONT] += 1000;
+      Speeds[AFTER] += 1000;
+      Speeds[LEFT] += 1000;
+      Speeds[RIGHT] += 1000;
+    }
+
+    void SubtractSpeed()
+    {
+      Speeds[FRONT] -= 1000;
+      Speeds[AFTER] -= 1000;
+      Speeds[LEFT] -= 1000;
+      Speeds[RIGHT] -= 1000;
+    }
+
+    void Motor()
+    {
+      if (pUnlockMotorDelay) pUnlockMotorDelay->Handle();
+
+      float p = m_ypr->GetPitchPoint() - configPID.BalancePitch;
+      float r = m_ypr->GetRollPoint() - configPID.BalanceRoll;
+      float y = m_ypr->GetYawPoint() - configPID.BalanceYaw;
+      if (b_Starting)
+      {
+        SetPitch(p);
+        SetRoll(r);
+        SetYaw(y);
+
+        SetPins();
+      }
+      
+      static long lastPrintTime = millis();
+      long nowTime = millis();
+      if(nowTime - lastPrintTime <1000) return;
+      lastPrintTime = nowTime;
+      Serial.print("pry:");
+      Serial.print(p);
+      Serial.print(" ");
+      Serial.print(r);
+      Serial.print(" ");
+      Serial.print(y);
+      Serial.print(" pid: ");
+      Serial.print(configPID.PitchP);
+      Serial.print(" ");
+      Serial.print(configPID.PitchI);
+      Serial.print(" ");
+      Serial.print(configPID.PitchD);
+      Serial.print(" | ");
+      Serial.print(configPID.RollP);
+      Serial.print(" ");
+      Serial.print(configPID.RollI);
+      Serial.print(" ");
+      Serial.print(configPID.RollD);
+      Serial.print(" | ");
+      Serial.print(configPID.YawP);
+      Serial.print(" ");
+      Serial.print(configPID.YawI);
+      Serial.print(" ");
+      Serial.print(configPID.YawD);
+      Serial.print("\n");
+      
+    }
 };
