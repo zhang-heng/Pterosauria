@@ -26,20 +26,24 @@ void loop()
   int val = Serial.read();
   if (val == 's')
     pControl->UnlockMotor();
+    
   else if (val == '1')
     pControl->Start();
   else if (val == 'q')
     pControl->Stop();
+    
   else if (val == '2')
     pp += 0.01;
-  else if (val == '3')
-    ii += 0.01;
-  else if (val == '4')
-    dd += 0.01;
   else if (val == 'w')
     pp -= 0.01;
+    
+  else if (val == '3')
+    ii += 0.01;
   else if (val == 'e')
     ii -= 0.01;
+    
+  else if (val == '4')
+    dd += 0.01;
   else if (val == 'r')
     dd -= 0.01;
 

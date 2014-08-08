@@ -32,7 +32,7 @@ class Cpid
     {
       register double iError, iIncpid; //当前误差
       iError = SetPoint - NextPoint; //增量计算
-      //E[k]项 -//E[k－1]项 +//E[k－2]项
+      //E[k]项 - E[k－1]项 + E[k－2]项
       iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError;
       //存储误差，用于下次计算
       PrevError = LastError;
