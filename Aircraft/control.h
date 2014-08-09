@@ -10,7 +10,7 @@
 #define MAX_SERVO 250
 
 #define MIN_SPEED 0
-#define MAX_SPEED 200000
+#define MAX_SPEED 100000
 
 class Ccontrol
 {
@@ -38,6 +38,10 @@ class Ccontrol
 
     void WriteAllControlPwmPin(int f, int a, int l, int r)
     {
+      if (f > 210) f = 210;
+      if (a > 210) a = 210;
+      if (l > 210) l = 210;
+      if (r > 210) r = 210;
       analogWrite(PIN_FRONT, f);
       analogWrite(PIN_AFTER, a);
       analogWrite(PIN_LEFT, l);
@@ -134,7 +138,7 @@ class Ccontrol
         });
         pUnlockMotorDelay->AddHandle(4000, [](void * pUser) {
           Ccontrol* p = (Ccontrol*) pUser;
-          p->SetAllValue(ACK_SERVO - 3);
+          p->SetAllValue(MIN_SERVO);
           p->b_unlockMotor = true;
           delete p->pUnlockMotorDelay;
           p->pUnlockMotorDelay = 0;
@@ -226,18 +230,19 @@ class Ccontrol
       float p = m_ypr->GetPitchPoint() - configPID.BalancePitch;
       float r = m_ypr->GetRollPoint() - configPID.BalanceRoll;
       float y = m_ypr->GetYawPoint() - configPID.BalanceYaw;
+      m_PitchPID->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
+
       if (b_Starting)
       {
-        SetPitch(p);
-        SetRoll(r);
-        SetYaw(y);
-
+        if (abs(p) > 0.2) SetPitch(p);
+        //if (abs(p) > 0.2) SetRoll(r);
+        //if (abs(p) > 0.2) SetYaw(y);
         SetPins();
       }
-      
+
       static long lastPrintTime = millis();
       long nowTime = millis();
-      if(nowTime - lastPrintTime <1000) return;
+      if (nowTime - lastPrintTime < 500) return;
       lastPrintTime = nowTime;
       Serial.print("pry:");
       Serial.print(p);
@@ -264,6 +269,5 @@ class Ccontrol
       Serial.print(" ");
       Serial.print(configPID.YawD);
       Serial.print("\n");
-      
     }
 };

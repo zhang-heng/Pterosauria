@@ -10,8 +10,10 @@ void setup()
 {
   Serial.begin(115200); 
   while (Serial.available() && Serial.read());
+  //while (!Serial.available());
+  //while (Serial.available() && Serial.read());
   if (pControl) delete pControl;
-  pControl =  new Ccontrol(10, 3, 9, 11);
+  pControl =  new Ccontrol(10, 3, 11, 9);
   pControl->Init();
 }
 
@@ -19,9 +21,8 @@ void loop()
 {
   pControl-> Motor();
   int val = Serial.read();
-  if (val == 's')
-    pControl->UnlockMotor();
-
+  if (val == 's') pControl->UnlockMotor();
+  
   else if (val == '1') pControl->Start();
   else if (val == 'q') pControl->Stop();
   else if (val == '2') pControl->configPID.PitchP += 0.1;
