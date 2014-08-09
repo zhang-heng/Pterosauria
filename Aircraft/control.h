@@ -231,19 +231,21 @@ class Ccontrol
       float r = m_ypr->GetRollPoint() - configPID.BalanceRoll;
       float y = m_ypr->GetYawPoint() - configPID.BalanceYaw;
       m_PitchPID->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
+      m_RollPID->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
+      m_YawPID->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
 
       if (b_Starting)
       {
         if (abs(p) > 0.2) SetPitch(p);
-        //if (abs(p) > 0.2) SetRoll(r);
-        //if (abs(p) > 0.2) SetYaw(y);
+        if (abs(p) > 0.2) SetRoll(r);
+        if (abs(p) > 0.2) SetYaw(y);
         SetPins();
       }
 
-      static long lastPrintTime = millis();
-      long nowTime = millis();
-      if (nowTime - lastPrintTime < 500) return;
-      lastPrintTime = nowTime;
+      //      static long lastPrintTime = millis();
+      //      long nowTime = millis();
+      //      if (nowTime - lastPrintTime < 500) return;
+      //      lastPrintTime = nowTime;
       Serial.print("pry:");
       Serial.print(p);
       Serial.print(" ");
