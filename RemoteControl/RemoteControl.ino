@@ -23,7 +23,10 @@ void setup()
   pinMode(clockPin, OUTPUT);
   pinMode(enablePin, OUTPUT);
   pinMode(latchPin, OUTPUT);
-  srlcd.write(i);
+  srlcd.write(0);
+  srlcd.write(1);
+  srlcd.write(2);
+  srlcd.write(3);
 }
 
 void loop()
