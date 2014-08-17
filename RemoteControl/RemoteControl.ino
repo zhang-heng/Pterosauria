@@ -1,67 +1,55 @@
 
 #include <ShiftRegLCD.h>
 
-const byte clockPin = 2;
-const byte dataOutPin = 3;
-const byte latchLcdPin = 4;
-const byte latchOutPin = 5;
-const byte latchInPin = 6;
-const byte dataInPin  = 7;
+#include "buttn.h"
+#include "lcd.h"
+#include "leds.h"
+#include "stick.h"
 
-ShiftRegLCD srlcd(dataOutPin, clockPin, latchLcdPin, 2);
+Cleds *leds;
+Clcd *lcd;
+Cbuttn *buttn;
+Cstick *stick;
+
+Coordinate coordinate;
 
 void setup()
 {
   Serial.begin(9600);
-  uint8_t pitch[8]  = {0x0, 0x4, 0xe, 0x4, 0x4, 0x4, 0x4, 0x0};
-  uint8_t roll[8]  = {0x0, 0x0, 0x0, 0x4, 0x1f, 0x0, 0x0, 0x0};
-  uint8_t yaw[8]  = {0x0, 0xe, 0x5, 0x4, 0x4, 0x14, 0xe, 0x0};
-  uint8_t elevation[8]  = {0x0, 0x1b, 0x0, 0x4, 0x4, 0x0, 0x1b, 0x0};
-  srlcd.createChar(0, pitch);
-  srlcd.createChar(1, roll);
-  srlcd.createChar(2, yaw);
-  srlcd.createChar(3, elevation);
-
-  pinMode(clockPin, OUTPUT);
-  pinMode(latchLcdPin, OUTPUT);
-  pinMode(latchOutPin, OUTPUT);
-  pinMode(latchInPin, OUTPUT);
-  pinMode(dataOutPin, OUTPUT);
-  pinMode(dataInPin, INPUT);
-  srlcd.write(0);
-  srlcd.write(1);
-  srlcd.write(2);
-  srlcd.write(3);
+  leds = new Cleds(5, 3, 2);
+  lcd = new Clcd(4, 3, 2);
+  buttn = new Cbuttn (6, 7, 2);
+  stick = new Cstick(2, 0, 1, 3);
 }
 
 void loop()
 {
-  srlcd.clear();
-
-  for (int r = 0; r < 2; r++)
+  stick->Init();
+  lcd->srlcd->setCursor(0, 0);
+  lcd->srlcd->print(stick->m_LeftXPin);
+  lcd->srlcd->print(" ");
+  lcd->srlcd->print(stick->m_LeftYPin);
+  lcd->srlcd->print(" ");
+  lcd->srlcd->print(stick->m_RightXPin);
+  lcd->srlcd->print(" ");
+  lcd->srlcd->print(stick->m_RightYPin);
+  lcd->srlcd->print(" ");
+  for (int i = 0; i < 10; i++)
   {
-    for (int c = 0; c < 16; c++)
-    {
-      srlcd.setCursor(c, r);
-      srlcd.print("A");
-      digitalWrite(latchOutPin, LOW);
-      shiftOut(dataOutPin, clockPin, MSBFIRST, 1 << c % 8);
-      digitalWrite(latchOutPin, HIGH);
-    }
+    lcd->srlcd->print(i);
+    delay(1000);
   }
-
-  digitalWrite(latchInPin, LOW);
-  byte c = shiftIn(dataInPin, clockPin, MSBFIRST);
-  digitalWrite(latchInPin, HIGH);
-  c = (shiftIn(dataInPin, clockPin, MSBFIRST) << 7) | c >> 1 ;
-  Serial.print(c & 0x80 ? 1 : 0);
-  Serial.print(c & 0x40 ? 1 : 0);
-  Serial.print(c & 0x20 ? 1 : 0);
-  Serial.print(c & 0x10 ? 1 : 0);
-  Serial.print(c & 0x08 ? 1 : 0);
-  Serial.print(c & 0x04 ? 1 : 0);
-  Serial.print(c & 0x02 ? 1 : 0);
-  Serial.print(c & 0x01 ? 1 : 0);
-  Serial.print("\n");
-  delay(100);
+//
+//  stick->Handle(&coordinate);
+//  lcd->srlcd->setCursor(0, 0);
+//  lcd->srlcd->print(coordinate.lx);
+//  lcd->srlcd->print(" ");
+//  lcd->srlcd->print(coordinate.ly);
+//  lcd->srlcd->print("        ");
+//  lcd->srlcd->setCursor(0, 1);
+//  lcd->srlcd->print(coordinate.rx);
+//  lcd->srlcd->print(" ");
+//  lcd->srlcd->print(coordinate.ry);
+//  lcd->srlcd->print("        ");
+  // delay(100);
 }
