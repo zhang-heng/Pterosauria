@@ -1,4 +1,3 @@
-#include <ShiftRegLCD.h>
 
 class Clcd
 {

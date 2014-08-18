@@ -1,5 +1,4 @@
-#include <arduino.h>
-
+ 
 typedef struct buttons
 {
   bool a1;

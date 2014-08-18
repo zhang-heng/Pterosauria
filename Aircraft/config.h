@@ -5,12 +5,15 @@ typedef struct STRUCT_CONFIG
   double PitchP;
   double PitchI;
   double PitchD;
+  
   double RollP;
   double RollI;
   double RollD;
+  
   double YawP;
   double YawI;
   double YawD;
+  
   double ElevationP;
   double ElevationI;
   double ElevationD;
@@ -18,6 +21,7 @@ typedef struct STRUCT_CONFIG
   double BalancePitch;
   double BalanceRoll;
   double BalanceYaw;
+  
 } StructConfig, *pStructConfig;
 
 #define ADDR_CONFIG 0x30

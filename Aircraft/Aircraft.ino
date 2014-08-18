@@ -2,9 +2,17 @@
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
 #include <EEPROM.h>
+
+#include <SPI.h>
+#include <Mirf.h>
+#include <nRF24L01.h>
+#include <MirfHardwareSpiDriver.h>
+
 #include "control.h"
+#include "connect.h"
 
 Ccontrol * pControl;
+Cconnect * conn;
 
 void setup()
 {
@@ -12,9 +20,9 @@ void setup()
   while (Serial.available() && Serial.read());
   //while (!Serial.available());
   //while (Serial.available() && Serial.read());
-  if (pControl) delete pControl;
   pControl =  new Ccontrol(10, 3, 11, 9);
   pControl->Init();
+  conn =  new Cconnect(8, 7);
 }
 
 void loop()
@@ -22,7 +30,7 @@ void loop()
   pControl-> Motor();
   int val = Serial.read();
   if (val == 's') pControl->UnlockMotor();
-  
+
   else if (val == '1') pControl->Start();
   else if (val == 'q') pControl->Stop();
   else if (val == '2') pControl->configPID.PitchP += 0.1;
@@ -55,3 +63,4 @@ void loop()
   else if (val == 'b')
     pControl->BalanceAdjust();
 }
+
