@@ -1,3 +1,4 @@
+#include <arduino.h>
 
 typedef struct NET_STRUCT
 {

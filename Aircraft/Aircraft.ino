@@ -20,7 +20,7 @@ void setup()
   while (Serial.available() && Serial.read());
   //while (!Serial.available());
   //while (Serial.available() && Serial.read());
-  pControl =  new Ccontrol(10, 3, 11, 9);
+  pControl =  new Ccontrol(5, 6, 9, 10);
   pControl->Init();
   conn =  new Cconnect(8, 7);
 }

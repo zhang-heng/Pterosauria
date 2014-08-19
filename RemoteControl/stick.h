@@ -1,3 +1,4 @@
+#include <arduino.h>
 
 typedef struct COORDINATE
 {
@@ -5,8 +6,7 @@ typedef struct COORDINATE
   int ly;
   int rx;
   int ry;
-} 
-Coordinate, *pCoordinate;
+}Coordinate, *pCoordinate;
 
 class Cstick
 {
@@ -19,8 +19,7 @@ public :
   int m_InitLeftX = 0;
   int m_InitLeftY = 0;
   int m_InitRightX = 0;
-  int m_InitRightY = 0;
-  bool m_Inited = false;
+  int m_InitRightY = 0; 
 
   Cstick(int leftXPin, int leftYPin, int rightXPin, int rightYPin)
   {
@@ -29,9 +28,9 @@ public :
     m_RightXPin = rightXPin;
     m_RightYPin = rightYPin;
   }
+  
   void Init ()
-  {
-    if (m_Inited) return;
+  { 
     m_InitLeftX = analogRead(m_LeftXPin);
     m_InitLeftY = analogRead(m_LeftYPin);
     m_InitRightX = analogRead(m_RightXPin);
