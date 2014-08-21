@@ -73,14 +73,7 @@ class Ccontrol
       m_ypr = new Cypr();
       m_barometer = new Cbarometer();
       m_compass =  new Ccompass();
-    }
-
-    ~Ccontrol()
-    {
-    }
-
-    void Init()
-    {
+      
       pinMode(PIN_FRONT, OUTPUT);
       pinMode(PIN_AFTER, OUTPUT);
       pinMode(PIN_LEFT, OUTPUT);
@@ -93,6 +86,10 @@ class Ccontrol
       m_ypr->Init();
     }
 
+    ~Ccontrol()
+    {
+    }
+    
     void SaveConfig()
     {
       WriteRom(&configPID);

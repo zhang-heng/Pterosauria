@@ -1,4 +1,3 @@
-#include <arduino.h>
 
 typedef struct COORDINATE
 {
@@ -6,11 +5,33 @@ typedef struct COORDINATE
   int ly;
   int rx;
   int ry;
-}Coordinate, *pCoordinate;
+}
+Coordinate, *pCoordinate;
 
 class Cstick
 {
 public :
+  Cstick(int leftXPin, int leftYPin, int rightXPin, int rightYPin)
+  {
+    m_LeftXPin = leftXPin;
+    m_LeftYPin = leftYPin;
+    m_RightXPin = rightXPin;
+    m_RightYPin = rightYPin; 
+    m_InitLeftX = analogRead(m_LeftXPin);
+    m_InitLeftY = analogRead(m_LeftYPin);
+    m_InitRightX = analogRead(m_RightXPin);
+    m_InitRightY = analogRead(m_RightYPin);
+  }
+
+  void Handle(Coordinate * c)
+  {
+    c->lx = adjust(analogRead(m_LeftXPin) , m_InitLeftX);
+    c->ly = -adjust(analogRead(m_LeftYPin) , m_InitLeftY);
+    c->rx = adjust(analogRead(m_RightXPin) , m_InitRightX);
+    c->ry = -adjust(analogRead(m_RightYPin) , m_InitRightY);
+  }
+
+private:
   int m_LeftXPin = 0;
   int m_LeftYPin = 0;
   int m_RightXPin = 0;
@@ -21,29 +42,16 @@ public :
   int m_InitRightX = 0;
   int m_InitRightY = 0; 
 
-  Cstick(int leftXPin, int leftYPin, int rightXPin, int rightYPin)
+  int adjust(int v, int initV)
   {
-    m_LeftXPin = leftXPin;
-    m_LeftYPin = leftYPin;
-    m_RightXPin = rightXPin;
-    m_RightYPin = rightYPin;
-  }
-  
-  void Init ()
-  { 
-    m_InitLeftX = analogRead(m_LeftXPin);
-    m_InitLeftY = analogRead(m_LeftYPin);
-    m_InitRightX = analogRead(m_RightXPin);
-    m_InitRightY = analogRead(m_RightYPin);
-  }
-
-  void Handle(Coordinate * c)
-  {
-    c->lx = map(analogRead(m_LeftXPin) - m_InitLeftX, -m_InitLeftX, 1024 - m_InitLeftX, -10, 10);
-    c->ly = map(analogRead(m_LeftYPin) - m_InitLeftY, -m_InitLeftY, 1024 - m_InitLeftY, -10, 10);
-    c->rx = map(analogRead(m_RightXPin) - m_InitRightX, -m_InitRightX, 1024 - m_InitRightX, -10, 10);
-    c->ry = map(analogRead(m_RightYPin) - m_InitRightY, -m_InitRightY, 1024 - m_InitRightY, -10, 10);
+    int val = v - initV;
+    if (abs(val)<5) return 0;
+    return map(val, -initV, 1024- initV, -512, 512);
+    return val;
   }
 };
+
+
+
 
 

@@ -1,4 +1,4 @@
- 
+
 class Cleds
 {
 public:
@@ -6,11 +6,9 @@ public:
   int m_DataPin;
   int m_ClockPin;
 
-  short HeaderMask = 0x0100;
-  short LeftMask[5] = {
-    0x0100, 0x0100, 0x0100, 0x0100, 0x0100  };
-  short RightMask[5] = {
-    0x0100, 0x0100, 0x0100, 0x0100, 0x0100  };
+  short HeaderMask = 0x0004;
+  short LeftMask[5] = {0x8000, 0x4000, 0x2000, 0x1000, 0x0800};
+  short RightMask[5] = {0x0080, 0x0040, 0x0020, 0x0010, 0x0008};
 
   short m_Value = 0x0000;
 
@@ -51,5 +49,6 @@ public:
     }
   }
 };
+
 
 
