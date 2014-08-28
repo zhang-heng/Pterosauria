@@ -1,12 +1,3 @@
-typedef struct NET_STRUCT
-{
-  int pitch;//left front&back
-  int roll;// left left&right
-  int elevation; //right front&back
-  int direction;//right left&right
-}
-NetStruct,*pNetStruct;
-
 class Cconnect
 {
 public :
@@ -21,103 +12,39 @@ public :
     Mirf.csnPin = csnPin;  
     Mirf.spi = &MirfHardwareSpi;
     Mirf.init();
-    Mirf.setRADDR((byte *)"controler1");
-    Mirf.channel = 10;
-    Mirf.payload = 4;//sizeof(NetStruct);
+    Mirf.setRADDR((byte *)"1controler");
+    Mirf.channel = 1;
+    Mirf.payload = sizeof(NetStruct);
     Mirf.config();
-    Mirf.setTADDR((byte *)"aircraft1");
+    Mirf.setTADDR((byte *)"1aircraft");
   }
 
 
-  int xxx =0;
-  long time = 0;
-  bool b_WaitRecv =false;
+  long lasttime = 0; 
+  long recvcount = 0;
+  long sendcount = 0;
+  long maxdelaytime = 0;
+  long mindelaytime = 0xff;
+
   void Handle()
-  {    
-    //Serial.println(100);
-    long t;
-    if(!Mirf.isSending() && Mirf.dataReady())
-    {
-      Mirf.getData((byte*) & t);
-      Mirf.send((byte*) & t);
-      Serial.println(t); 
-    }
-    return;
-    
-    if (!Mirf.isSending() && !Mirf.dataReady() && !b_WaitRecv)
-    {
-      time = millis();
-      Mirf.send((byte *)&time); 
-      b_WaitRecv = true; 
-//      for(int i =0;i<5;i++)
-//      {
-//        Serial.print("send... ");
-//        Serial.print(Mirf.isSending());
-//        Serial.print(" ");
-//        Serial.print(Mirf.dataReady());
-//        Serial.print(" ");
-//        Serial.print(b_WaitRecv);
-//        Serial.print("\n");
-//        delay(1);
-//      } 
-      return;
-    }
-
-    if (!Mirf.isSending() && Mirf.dataReady()  && b_WaitRecv)
-    {
-      Mirf.getData((byte *) &time);
-      b_WaitRecv = false; 
-//      Serial.print("recv... ");
-//      Serial.print(Mirf.isSending());
-//      Serial.print(" ");
-//      Serial.print(Mirf.dataReady());
-//      Serial.print(" ");
-//      Serial.print(b_WaitRecv);
-//      Serial.print("\n");
-//      Serial.println(millis() - time);
-      return;
-    }
-
-    if (millis() - time > 1000 && b_WaitRecv) 
-    {
-      //      Serial.print("timeout... ");
-      //      Serial.print(Mirf.isSending());
-      //      Serial.print(" ");
-      //      Serial.print(Mirf.dataReady());
-      //      Serial.print(" ");
-      //      Serial.print(b_WaitRecv);
-      //      Serial.print("\n");
-      b_WaitRecv = false;
-    }
+  {       
+    sendcount++;  
+    unsigned long time = micros();  
+    Mirf.send((byte *)&time);  
+    while(Mirf.isSending()){
+    } 
+    while(!Mirf.dataReady()){ 
+      if ( ( micros() - time ) > 5000 ) { 
+        return;
+      }
+    }  
+    recvcount ++;
+    Mirf.getData((byte *) &time);   
+    long t = micros() - time;   
+    if (t> maxdelaytime)  maxdelaytime = t;
+    if (t<mindelaytime)  mindelaytime = t;
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
