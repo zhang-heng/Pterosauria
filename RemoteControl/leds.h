@@ -7,8 +7,10 @@ public:
   int m_ClockPin;
 
   short HeaderMask = 0x0004;
-  short LeftMask[5] = {0x8000, 0x4000, 0x2000, 0x1000, 0x0800};
-  short RightMask[5] = {0x0080, 0x0040, 0x0020, 0x0010, 0x0008};
+  short LeftMask[5] = {
+    0x8000, 0x4000, 0x2000, 0x1000, 0x0800  };
+  short RightMask[5] = {
+    0x0080, 0x0040, 0x0020, 0x0010, 0x0008  };
 
   short m_Value = 0x0000;
 
@@ -34,21 +36,24 @@ public:
     pinMode(m_ClockPin, OUTPUT);
   }
 
-  void Handle()
+  void NetBlink()
   {
-    long t = millis();
-    if(m_Light && t - m_LastTime > 200)
-    {
-      m_LastTime = t;
-      Write(0);
-    }
-    if(!m_Light && t - m_LastTime > 500)
-    {
-      m_LastTime = t;
-      Write(m_Value);
-    }
+    m_Value^= HeaderMask;
+    Handle();
+  }
+  
+  void NetOff()
+  {
+    m_Value &=(HeaderMask ^ 0xffff);
+    Handle();
+  }
+
+  void Handle()
+  {    
+    Write(m_Value);
   }
 };
+
 
 
 

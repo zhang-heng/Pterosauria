@@ -57,7 +57,7 @@ public :
     while(Mirf.isSending()){
     } 
     while(!Mirf.dataReady()){ 
-      if ( ( millis() - sendbuff.time ) > 20) { 
+      if ( ( millis() - sendbuff.time ) > 10) { 
         Serial.print(t);
         Serial.print("Timeout..\n");
         return false;

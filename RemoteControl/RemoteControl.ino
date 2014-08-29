@@ -52,7 +52,6 @@ void loop()
 {
   buttn->Read(&bs);
   conn->GetValueByType(TYPE_POWER,v);   
-
   conn->GetValueByType(TYPE_PITCH,pitch);
   conn->GetValueByType(TYPE_PITCH_P,pitchP);
   conn->GetValueByType(TYPE_PITCH_I,pitchI);
@@ -70,10 +69,12 @@ void loop()
 
   if(bs.a1)
   {
+    leds->NetBlink();
     conn->GetValueByType(TYPE_SELF_STATIONARY,v); 
   } 
   else
   {
+    leds->NetOff();
     if (bs.b1)
     {
       conn->GetValueByType(TYPE_INIT_BALANCE,v);      
@@ -85,6 +86,8 @@ void loop()
   lcd->ShowPower(50);
   lcd->SetSignal(conn->GetSuccessCount());
 }
+
+
 
 
 
