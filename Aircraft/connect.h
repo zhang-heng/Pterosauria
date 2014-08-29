@@ -8,29 +8,41 @@ public :
     //* MOSI -> 11
     //* SCK -> 13
 
+    Serial.print("Initializing nRF2401l");
     Mirf.cePin = cePin;
     Mirf.csnPin = csnPin;  
     Mirf.spi = &MirfHardwareSpi;
+    Serial.print(".");
     Mirf.init();
+    Serial.print(".");
     Mirf.setRADDR((byte *)"1aircraft");
     Mirf.channel = 1;
     Mirf.payload = sizeof(NetStruct);
     Mirf.config();
+    Serial.print(".");
     Mirf.setTADDR((byte *)"1controler");
+    Serial.print("finish! \n");
   }
 
-  void Handle()
-  {     
-    byte data[Mirf.payload];
+  void Read(NetStruct *pmsg)
+  { 
     if(!Mirf.isSending() && Mirf.dataReady())
     {
-      Mirf.getData(data);
-      //Mirf.setTADDR((byte *)"1aircraft");
-      Mirf.send(data);
-      //Serial.println("Reply sent.");
+      Mirf.getData((byte*)pmsg);  
     }
-  }  
+    else
+    {
+      memset(pmsg,0,sizeof(NetStruct));      
+      pmsg->type = TYPE_UNKNOW;
+    }
+  }
+
+  void Send(NetStruct *pmsg)
+  {
+    Mirf.send((byte*) pmsg);
+  }
 };
+
 
 
 
