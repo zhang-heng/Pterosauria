@@ -52,6 +52,12 @@ public:
   {    
     Write(m_Value);
   }
+  
+  void NetOn()
+  {
+    m_Value |=HeaderMask ;
+    Handle();    
+  }
 };
 
 

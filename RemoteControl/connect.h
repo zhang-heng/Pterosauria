@@ -58,8 +58,6 @@ public :
     } 
     while(!Mirf.dataReady()){ 
       if ( ( millis() - sendbuff.time ) > 10) { 
-        Serial.print(t);
-        Serial.print("Timeout..\n");
         return false;
       }
     }
@@ -75,6 +73,10 @@ public :
   {
     if(millis() - m_LastTime > 500) 
     {  
+      Serial.println(m_RecvCount);
+      Serial.println("/");
+      Serial.println(m_SendCount);
+      Serial.println("\n");
       m_SuccessCount = m_RecvCount*100/ m_SendCount;
       m_LastTime = millis();
       m_SendCount = 0;

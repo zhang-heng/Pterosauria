@@ -19,8 +19,8 @@ public :
     m_RightYPin = rightYPin; 
     m_InitLeftX = analogRead(m_LeftXPin);
     m_InitLeftY = analogRead(m_LeftYPin);
-    m_InitRightX = analogRead(m_RightXPin);
     m_InitRightY = analogRead(m_RightYPin);
+    m_InitRightX = analogRead(m_RightXPin);
   }
 
   void Handle(Coordinate * c)
