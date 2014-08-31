@@ -5,7 +5,7 @@
 #include "compass.h"
 #include "config.h"
 
-#define MIN_SERVO 120
+#define MIN_SERVO 110
 #define ACK_SERVO 140
 #define MAX_SERVO 250
 
@@ -49,7 +49,11 @@ class Ccontrol
     float GetYaw()  {
       return m_compass->GetPoint() - configPID.BalanceYaw;
     }
-
+    
+    void Flying()
+    {
+      WriteAllControlPwmPin(Speeds[0],Speeds[1],Speeds[2],Speeds[3]);
+    }
 
     void SaveConfig()
     {
@@ -201,18 +205,18 @@ class Ccontrol
       }
     }
 
+    long Speeds[4];
   private:
     int PIN_FRONT;
     int PIN_AFTER;
     int PIN_LEFT;
     int PIN_RIGHT;
 
-    long Speeds[4];
     const int FRONT = 0;
     const int AFTER = 1;
     const int LEFT = 2;
     const int RIGHT = 3;
-    bool b_unlockMotor;
+    bool b_unlockMotor = false;
     bool b_Starting = false;
     CdelayHandle *pUnlockMotorDelay = NULL;
     Cypr *m_ypr = NULL;

@@ -23,7 +23,7 @@ public :
     m_InitRightX = analogRead(m_RightXPin);
   }
 
-  void Handle(Coordinate * c)
+  void Read(Coordinate * c)
   {
     c->lx = adjust(analogRead(m_LeftXPin) , m_InitLeftX);
     c->ly = -adjust(analogRead(m_LeftYPin) , m_InitLeftY);

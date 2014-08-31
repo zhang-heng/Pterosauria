@@ -41,7 +41,6 @@ void loop()
     conn->Read(&msg);
     float vf = 0;
     int vi = 0;
-    Serial.println(msg.type);
     switch (msg.type)
     {
       case TYPE_UNKNOW:
@@ -57,12 +56,28 @@ void loop()
         conn->Send(&msg);
         break;
       case TYPE_MOTOR_A:
+        pControl->Speeds[0] += *(int*)&msg.value;
+        vf = pControl->Speeds[0];
+        msg.value = *(ulong*)& vf;
+        conn->Send(&msg);
         break;
       case TYPE_MOTOR_B:
+        pControl->Speeds[1] +=  *(int*)&msg.value;
+        vf = pControl->Speeds[1];
+        msg.value = *(ulong*)& vf;
+        conn->Send(&msg);
         break;
       case TYPE_MOTOR_C:
+        pControl->Speeds[2] +=  *(int*)&msg.value;
+        vf = pControl->Speeds[2];
+        msg.value = *(ulong*)& vf;
+        conn->Send(&msg);
         break;
       case TYPE_MOTOR_D:
+        pControl->Speeds[3] +=  *(int*)&msg.value;
+        vf = pControl->Speeds[3];
+        msg.value = *(ulong*)& vf;
+        conn->Send(&msg);
         break;
 
       case TYPE_PITCH:
@@ -138,10 +153,10 @@ void loop()
         break;
 
       case TYPE_UNLOCK:
-        vf =  0;
-        msg.value = *(ulong*)& vf;
-        Serial.println("unlock");
-        pControl->UnlockMotor();
+        vf = pControl->UnlockMotor();
+        msg.value = *(ulong*)& vf;        
+        conn->Send(&msg);
+        if (vf ) pControl->Flying();
         break;
       case TYPE_SELF_STATIONARY:
         vf =  0;

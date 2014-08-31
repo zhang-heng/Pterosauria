@@ -25,7 +25,7 @@ void setup()
   leds = new Cleds(5, 3, 2);
   lcd = new Clcd(4, 3, 2);
   buttn = new Cbuttn (6, 7, 2);
-  stick = new Cstick(0, 1, 3, 2);
+  stick = new Cstick(2, 3, 1, 0);
   Serial.println ("init finish");
 }
 
@@ -50,9 +50,11 @@ float v = 0;
 Buttons bs = {
   0, 0, 0, 0, 0
 };
+Coordinate cc;
 
 void loop()
 {
+  stick->Read(&cc);
   buttn->Read(&bs);
   conn->GetValueByType(TYPE_POWER, v);
   conn->GetValueByType(TYPE_PITCH, pitch);
@@ -70,7 +72,26 @@ void loop()
   conn->GetValueByType(TYPE_YAW_I, yawI);
   conn->GetValueByType(TYPE_YAW_D, yawD);
 
-  //conn->GetValueByType(TYPE_POWER, power);
+  conn->GetValueByType(TYPE_POWER, power);
+  if (cc.lx >0) cc.lx =1;
+  if (cc.lx <0) cc.lx =-1;
+  if (cc.ly >0) cc.ly =1;
+  if (cc.ly <0) cc.ly =-1;
+  if (cc.rx >0) cc.rx =1;
+  if (cc.rx <0) cc.rx =-1;
+  if (cc.ry >0) cc.ry =1;
+  if (cc.ry <0) cc.ry =-1;
+  ulong  stickv [4] = {cc.lx, cc.ly, cc.rx, cc.ry};
+  for (int i = 0; i < 4; i++)
+  {
+    int vv = 0;
+    conn->GetValueByType((NetType)(TYPE_MOTOR_A + i), stickv[i],*(float*)& vv);
+    Serial.print (vv);
+    Serial.print ("\t");
+  }
+  Serial.print ("\n");
+
+
 
   if (bs.a1)
   {
