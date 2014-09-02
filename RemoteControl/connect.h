@@ -35,6 +35,13 @@ public :
     0,0,0,0                  };
 
 
+
+  bool CommandByType(NetType t)
+  {
+    ulong v = 0;
+    return  GetValueByType( t,  0 , v);
+  }
+  
   bool GetValueByType(NetType t, float &vOut)
   {
     return  GetValueByType( t,  0 ,*(ulong*)&vOut);

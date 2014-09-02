@@ -45,8 +45,8 @@ private:
   int adjust(int v, int initV)
   {
     int val = v - initV;
-    if (abs(val)<5) return 0;
-    return map(val, -initV, 1024- initV, -512, 512);
+    if (abs(val)<20) return 0;
+    return map(val, -initV, 1024- initV, -10, 10);
     return val;
   }
 };

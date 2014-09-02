@@ -1,4 +1,4 @@
-#include <arduino.h>
+#include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
 
@@ -10,8 +10,7 @@
 #include <HMC5883L.h>
 
 #include <SPI.h>
-#include <NetDefine.h>
-#include <arduino.h>
+#include <NetDefine.h> 
 
 #include "power.h"
 #include "control.h"
