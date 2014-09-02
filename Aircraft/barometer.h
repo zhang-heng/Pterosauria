@@ -1,12 +1,11 @@
-
 //气压传感器(BMP180)
 class Cbarometer
 {
-  public :
-    Cbarometer()
+ public :
+  Cbarometer()
     {
     }
-    float GetPoint()
-    {
-    }
+  float GetPoint()
+  {
+  }
 };

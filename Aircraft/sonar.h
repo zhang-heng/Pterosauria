@@ -1,5 +1,3 @@
-#include <NewPing.h>
-
 class Csonar
 {
   private:
@@ -14,4 +12,4 @@ class Csonar
       unsigned int uS = m_sonar->ping();
       return uS / US_ROUNDTRIP_CM;
     }
-}
+};
