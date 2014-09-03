@@ -37,7 +37,7 @@ class Cleds
   }
 
   void NetOff(){
-    m_Value &=(HeaderMask ^ 0xffff);
+    m_Value &=~HeaderMask;
     Handle();
   }
 

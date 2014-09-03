@@ -30,14 +30,13 @@ void setup()
   Serial.begin(115200);
   conn =  new Cconnect(8, 7);
   pControl =  new Ccontrol(5, 6, 9, 10);
-  pPower = new Cpower(2);
+  pPower = new Cpower(A2);
   Serial.println("Initializing finish");
 }
 
 //网络接收数据包
 NetStruct msg;
 ulong lastRecvTime =0;
-bool b_flying = false;
 
 //循环体
 void loop()
@@ -49,6 +48,10 @@ void loop()
   //循环过程中频繁访问网络,以免遥控端延迟丢包.
   for (int i = 0; i < 10; i++){
     conn->Read(&msg);
+
+    if(msg.type != TYPE_UNKNOW)
+      lastRecvTime = currentTime;
+
     float vf = 0;
     int vi = 0;
     switch (msg.type){
@@ -61,6 +64,56 @@ void loop()
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
+
+    case TYPE_UNLOCK://解锁电调
+      vf = pControl->UnlockMotor();
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      break;
+    case TYPE_SELF_STATIONARY://自稳
+      pControl->SelfStationary();
+      vf =  0;
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      break;
+    case TYPE_LAND://着陆
+      pControl->Landing();
+      conn->Send(&msg);
+      break;
+    case TYPE_INIT_BALANCE://平衡初始化
+      vf =  0;
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      pControl->BalanceAdjust();
+      break;
+
+    case TYPE_PITCH://调整/获取俯仰状态
+      vf =  pControl->GetPitch();
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      break;
+    case TYPE_ROLL://调整/获取横滚状态
+      vf = pControl->GetRoll();
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      break;
+    case TYPE_YAW://调整/获取航向状态
+      vf = pControl->GetYaw();
+      msg.value = *(ulong*)& vf;
+      conn->Send(&msg);
+      break;
+    case TYPE_ELEVATION://调整/获取高度状态
+      conn->Send(&msg);
+      break;
+
+      /*************调试参数************/
+    case TYPE_READ_CONFIG://读取配置
+      conn->Send(&msg);
+      break;
+    case TYPE_WRITE_CONFIG://写入配置
+      conn->Send(&msg);
+      break;
+
     case TYPE_MOTOR_A://调整/获取A电调频率
       pControl->Servos[0] += *(int*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[0];
@@ -82,11 +135,6 @@ void loop()
       conn->Send(&msg);
       break;
 
-    case TYPE_PITCH://调整/获取俯仰值 pid
-      vf =  pControl->GetPitch();
-      msg.value = *(ulong*)& vf;
-      conn->Send(&msg);
-      break;
     case TYPE_PITCH_P:
       pControl->configPID.PitchP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.PitchP;
@@ -100,12 +148,6 @@ void loop()
     case TYPE_PITCH_D:
       pControl->configPID.PitchD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.PitchD;
-      conn->Send(&msg);
-      break;
-
-    case TYPE_ROLL://调整/获取横滚值 pid
-      vf = pControl->GetRoll();
-      msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_ROLL_P:
@@ -123,12 +165,6 @@ void loop()
       msg.value = *(ulong*)& pControl->configPID.RollD;
       conn->Send(&msg);
       break;
-
-    case TYPE_YAW://调整/获取航向值 pid
-      vf = pControl->GetYaw();
-      msg.value = *(ulong*)& vf;
-      conn->Send(&msg);
-      break;
     case TYPE_YAW_P:
       pControl->configPID.YawP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.YawP;
@@ -142,10 +178,6 @@ void loop()
     case TYPE_YAW_D:
       pControl->configPID.YawD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.YawD;
-      conn->Send(&msg);
-      break;
-
-    case TYPE_ELEVATION://调整/获取高度值  pid
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION_P:
@@ -164,35 +196,6 @@ void loop()
       conn->Send(&msg);
       break;
 
-    case TYPE_UNLOCK://解锁电调
-      vf = pControl->UnlockMotor();
-      msg.value = *(ulong*)& vf;
-      conn->Send(&msg);
-      b_flying = (bool) vf;
-      break;
-    case TYPE_SELF_STATIONARY://自稳
-      vf =  0;
-      msg.value = *(ulong*)& vf;
-      conn->Send(&msg);
-      break;
-    case TYPE_LAND://着陆
-      b_flying = false;
-      pControl->Landing();
-      conn->Send(&msg);
-      break;
-    case TYPE_INIT_BALANCE://平衡初始化
-      vf =  0;
-      msg.value = *(ulong*)& vf;
-      conn->Send(&msg);
-      pControl->BalanceAdjust();
-      break;
-    case TYPE_READ_CONFIG://读取配置
-      conn->Send(&msg);
-      break;
-    case TYPE_WRITE_CONFIG://写入配置
-      conn->Send(&msg);
-      break;
-
     default:
       break;
     }
@@ -200,5 +203,6 @@ void loop()
 
   //1s未收到数据,在飞行状态则进入悬停.
   if (currentTime - lastRecvTime > 1000){
+    pControl->SelfStationary();
   }
 }

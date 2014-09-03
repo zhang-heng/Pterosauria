@@ -21,7 +21,7 @@ typedef struct STRUCT_CONFIG
   double BalancePitch;
   double BalanceRoll;
   double BalanceYaw;
-
+  double BalanceElevation;
 } StructConfig, *pStructConfig;
 
 #define ADDR_CONFIG 0x30

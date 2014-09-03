@@ -68,7 +68,7 @@ class Ccontrol
     return m_compass->GetPoint() - configPID.BalanceYaw;
   }
   float GetElevation(){
-    return m_compass->GetPoint() - configPID.BalanceYaw;
+    return m_compass->GetPoint() - configPID.BalanceElevation;
   }
 
   void FlushSensors(){
@@ -81,6 +81,9 @@ class Ccontrol
   //飞行处理
   void Flying(){
     WriteAllControlPwmPin(Speeds[0],Speeds[1],Speeds[2],Speeds[3]);
+  }
+  //自稳
+  void SelfStationary(){
   }
 
   //着陆处理

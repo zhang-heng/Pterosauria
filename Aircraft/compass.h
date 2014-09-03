@@ -25,8 +25,8 @@ class Ccompass
       float heading = atan2(my, mx);
       //if(heading < 0) heading += 2 * M_PI;
       m_point = (heading * 180/M_PI) - m_adj;
-      if(m_point > 180) m_point-= 180;
-      if(m_point <-180) m_point+= 180;
+      if(m_point > 180) m_point -= 360;
+      else if(m_point <-180) m_point += 360;
     }
     return m_point;
   }

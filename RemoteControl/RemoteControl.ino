@@ -65,35 +65,36 @@ void loop(){
   conn->GetValueByType(TYPE_YAW, yaw);
   conn->GetValueByType(TYPE_ELEVATION, ele);
 
-  conn->GetValueByType(TYPE_PITCH_P, pitchP);
-  conn->GetValueByType(TYPE_PITCH_I, pitchI);
-  conn->GetValueByType(TYPE_PITCH_D, pitchD);
-  conn->GetValueByType(TYPE_ROLL_P, rollP);
-  conn->GetValueByType(TYPE_ROLL_I, rollI);
-  conn->GetValueByType(TYPE_ROLL_D, rollD);
-  conn->GetValueByType(TYPE_YAW_P, yawP);
-  conn->GetValueByType(TYPE_YAW_I, yawI);
-  conn->GetValueByType(TYPE_YAW_D, yawD);
-  conn->GetValueByType(TYPE_ELEVATION_P, eleP);
-  conn->GetValueByType(TYPE_ELEVATION_I, eleI);
-  conn->GetValueByType(TYPE_ELEVATION_D, eleD);
-
   ulong  stickv [4] = {
     cc.lx, cc.ly, cc.rx, cc.ry
   };
 
   if (bs.a1){
     if (bs.a2){
-      conn->CommandByType(TYPE_UNLOCK);
       leds->NetBlink();
+      conn->CommandByType(TYPE_UNLOCK);
+      conn->CommandByType(TYPE_SELF_STATIONARY);
     }
     else{
       leds->NetOn();
+      conn->CommandByType(TYPE_LAND);
     }
-    conn->CommandByType(TYPE_SELF_STATIONARY);
   }
   else{
     leds->NetOff();
+    conn->GetValueByType(TYPE_PITCH_P, pitchP);
+    conn->GetValueByType(TYPE_PITCH_I, pitchI);
+    conn->GetValueByType(TYPE_PITCH_D, pitchD);
+    conn->GetValueByType(TYPE_ROLL_P, rollP);
+    conn->GetValueByType(TYPE_ROLL_I, rollI);
+    conn->GetValueByType(TYPE_ROLL_D, rollD);
+    conn->GetValueByType(TYPE_YAW_P, yawP);
+    conn->GetValueByType(TYPE_YAW_I, yawI);
+    conn->GetValueByType(TYPE_YAW_D, yawD);
+    conn->GetValueByType(TYPE_ELEVATION_P, eleP);
+    conn->GetValueByType(TYPE_ELEVATION_I, eleI);
+    conn->GetValueByType(TYPE_ELEVATION_D, eleD);
+
     if (bs.b1){
       conn->CommandByType(TYPE_INIT_BALANCE);
     }
