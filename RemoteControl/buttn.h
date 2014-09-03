@@ -1,4 +1,3 @@
-
 typedef struct BUTTONS
 {
   bool a1;
@@ -10,9 +9,8 @@ typedef struct BUTTONS
 
 class Cbuttn
 {
-public :
-  Cbuttn (int latchPin, int dataPin, int clockPin)
-  {
+ public :
+  Cbuttn (int latchPin, int dataPin, int clockPin){
     m_LatchPin = latchPin;
     m_DataPin = dataPin;
     m_ClockPin = clockPin;
@@ -21,8 +19,7 @@ public :
     pinMode(m_ClockPin, OUTPUT);
   }
 
-  void Read(Buttons * b)
-  {
+  void Read(Buttons * b){
     digitalWrite(m_LatchPin, LOW);
     byte c = shiftIn(m_DataPin, m_ClockPin, MSBFIRST);
     digitalWrite(m_LatchPin, HIGH);
@@ -32,11 +29,9 @@ public :
     b->b2 = !(c & 0x08);
     b->b3 = !(c & 0x10);
   }
-  
-private:
+
+ private:
   int m_LatchPin;
   int m_DataPin;
   int m_ClockPin;
 };
-
-

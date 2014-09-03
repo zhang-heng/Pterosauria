@@ -24,15 +24,13 @@ class Cconnect
   }
 
   void Read(NetStruct *pmsg){
-    if(!Mirf.isSending() && Mirf.dataReady())
-      {
-        Mirf.getData((byte*)pmsg);
-      }
-    else
-      {
-        memset(pmsg,0,sizeof(NetStruct));
-        pmsg->type = TYPE_UNKNOW;
-      }
+    if(!Mirf.isSending() && Mirf.dataReady()){
+      Mirf.getData((byte*)pmsg);
+    }
+    else{
+      memset(pmsg,0,sizeof(NetStruct));
+      pmsg->type = TYPE_UNKNOW;
+    }
   }
 
   void Send(NetStruct *pmsg){

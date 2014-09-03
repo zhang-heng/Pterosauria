@@ -2,10 +2,8 @@
 class Cbarometer
 {
  public :
-  Cbarometer()
-    {
-    }
-  float GetPoint()
-  {
+  Cbarometer(){
+  }
+  float GetPoint(){
   }
 };

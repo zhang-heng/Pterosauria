@@ -18,8 +18,7 @@ Clcd *lcd;
 Cbuttn *buttn;
 Cconnect *conn;
 
-void setup()
-{
+void setup(){
   Serial.begin(115200);
   conn = new Cconnect (10, 9);
   leds = new Cleds(5, 3, 2);
@@ -48,16 +47,12 @@ float eleD = 0;
 
 float power = 0;
 
-void loop()
-{
-  Buttons bs = {
-    0, 0, 0, 0, 0
-  };
+void loop(){
+  Buttons bs = {0, 0, 0, 0, 0};
   buttn->Read(&bs);
 
   Coordinate cc;
   stick->Read(&cc);
-
 
   conn->GetValueByType(TYPE_POWER, power);
 
@@ -83,28 +78,23 @@ void loop()
     cc.lx, cc.ly, cc.rx, cc.ry
   };
 
-  if (bs.a1)
-    {
-      if (bs.a2)
-        {
-          conn->CommandByType(TYPE_UNLOCK);
-          leds->NetBlink();
-        }
-      else
-        {
-          leds->NetOn();
-        }
-      conn->CommandByType(TYPE_SELF_STATIONARY);
+  if (bs.a1){
+    if (bs.a2){
+      conn->CommandByType(TYPE_UNLOCK);
+      leds->NetBlink();
     }
-  else
-    {
-      leds->NetOff();
-      if (bs.b1)
-        {
-          conn->CommandByType(TYPE_INIT_BALANCE);
-        }
-      conn->CommandByType(TYPE_TIME_SYN);
+    else{
+      leds->NetOn();
     }
+    conn->CommandByType(TYPE_SELF_STATIONARY);
+  }
+  else{
+    leds->NetOff();
+    if (bs.b1){
+      conn->CommandByType(TYPE_INIT_BALANCE);
+    }
+    conn->CommandByType(TYPE_TIME_SYN);
+  }
 
   lcd->Show(pitch, roll, yaw, 0);
   lcd->ShowPower(power);
@@ -113,84 +103,82 @@ void loop()
 
 
 
-void SerialControl()
-{
-  switch( Serial.read())
-    {
-    case '1':
-      conn->GetValueByType(TYPE_PITCH_P, 0.01,pitchP);
-      break;
-    case 'q':
-      conn->GetValueByType(TYPE_PITCH_P, -0.01,pitchP);
-      break;
-    case '2':
-      conn->GetValueByType(TYPE_PITCH_I, 0.01,pitchI);
-      break;
-    case 'w':
-      conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);
-      break;
-    case '3':
-      conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);
-      break;
-    case 'e':
-      conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);
-      break;
+void SerialControl(){
+  switch( Serial.read()){
+  case '1':
+    conn->GetValueByType(TYPE_PITCH_P, 0.01,pitchP);
+    break;
+  case 'q':
+    conn->GetValueByType(TYPE_PITCH_P, -0.01,pitchP);
+    break;
+  case '2':
+    conn->GetValueByType(TYPE_PITCH_I, 0.01,pitchI);
+    break;
+  case 'w':
+    conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);
+    break;
+  case '3':
+    conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);
+    break;
+  case 'e':
+    conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);
+    break;
 
-    case '4':
-      conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);
-      break;
-    case 'r':
-      conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);
-      break;
-    case '5':
-      conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);
-      break;
-    case 't':
-      conn->GetValueByType(TYPE_ROLL_I, -0.01,rollI);
-      break;
-    case '6':
-      conn->GetValueByType(TYPE_ROLL_D, 0.01,rollD);
-      break;
-    case 'y':
-      conn->GetValueByType(TYPE_ROLL_D, -0.01,rollD);
-      break;
+  case '4':
+    conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);
+    break;
+  case 'r':
+    conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);
+    break;
+  case '5':
+    conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);
+    break;
+  case 't':
+    conn->GetValueByType(TYPE_ROLL_I, -0.01,rollI);
+    break;
+  case '6':
+    conn->GetValueByType(TYPE_ROLL_D, 0.01,rollD);
+    break;
+  case 'y':
+    conn->GetValueByType(TYPE_ROLL_D, -0.01,rollD);
+    break;
 
-    case '7':
-      conn->GetValueByType(TYPE_YAW_P, 0.01,yawP);
-      break;
-    case 'u':
-      conn->GetValueByType(TYPE_YAW_P, -0.01,yawP);
-      break;
-    case '8':
-      conn->GetValueByType(TYPE_YAW_I, 0.01,yawI);
-      break;
-    case 'i':
-      conn->GetValueByType(TYPE_YAW_I, -0.01,yawI);
-      break;
-    case '9':
-      conn->GetValueByType(TYPE_YAW_D, 0.01,yawD);
-      break;
-    case 'o':
-      conn->GetValueByType(TYPE_YAW_D, -0.01,yawD);
-      break;
+  case '7':
+    conn->GetValueByType(TYPE_YAW_P, 0.01,yawP);
+    break;
+  case 'u':
+    conn->GetValueByType(TYPE_YAW_P, -0.01,yawP);
+    break;
+  case '8':
+    conn->GetValueByType(TYPE_YAW_I, 0.01,yawI);
+    break;
+  case 'i':
+    conn->GetValueByType(TYPE_YAW_I, -0.01,yawI);
+    break;
+  case '9':
+    conn->GetValueByType(TYPE_YAW_D, 0.01,yawD);
+    break;
+  case 'o':
+    conn->GetValueByType(TYPE_YAW_D, -0.01,yawD);
+    break;
 
-    case '0':
-      conn->GetValueByType(TYPE_ELEVATION_P, 0.01,eleP);
-      break;
-    case 'p':
-      conn->GetValueByType(TYPE_ELEVATION_P, -0.01,eleP);
-      break;
-    case '-':
-      conn->GetValueByType(TYPE_ELEVATION_I, 0.01,eleI);
-      break;
-    case '[':
-      conn->GetValueByType(TYPE_ELEVATION_I, -0.01,eleI);
-      break;
-    case '=':
-      conn->GetValueByType(TYPE_ELEVATION_D, 0.01,eleD);
-      break;
-    case ']':
-      conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);
-      break;
-    }
+  case '0':
+    conn->GetValueByType(TYPE_ELEVATION_P, 0.01,eleP);
+    break;
+  case 'p':
+    conn->GetValueByType(TYPE_ELEVATION_P, -0.01,eleP);
+    break;
+  case '-':
+    conn->GetValueByType(TYPE_ELEVATION_I, 0.01,eleI);
+    break;
+  case '[':
+    conn->GetValueByType(TYPE_ELEVATION_I, -0.01,eleI);
+    break;
+  case '=':
+    conn->GetValueByType(TYPE_ELEVATION_D, 0.01,eleD);
+    break;
+  case ']':
+    conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);
+    break;
+  }
 }

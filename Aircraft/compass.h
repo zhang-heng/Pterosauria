@@ -20,7 +20,7 @@ class Ccompass
   float GetPoint(){
     ulong currentTime = millis();
     if(currentTime - m_lastTime > 20){
-        m_lastTime = currentTime;
+      m_lastTime = currentTime;
       mag.getHeading(&mx, &my, &mz);
       float heading = atan2(my, mx);
       //if(heading < 0) heading += 2 * M_PI;

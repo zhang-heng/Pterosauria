@@ -83,24 +83,24 @@ class Ccontrol
   bool UnlockMotor(){
     if (b_unlockMotor) return true;
     if (!pUnlockMotorDelay){
-        pUnlockMotorDelay = new CdelayHandle((void*)this);
-        pUnlockMotorDelay->AddHandle(0, [](void * pUser){
-            Ccontrol* p = (Ccontrol*) pUser;
-            p->SetAllValue(MIN_SERVO);
-            Serial.println("low level motor");});
+      pUnlockMotorDelay = new CdelayHandle((void*)this);
+      pUnlockMotorDelay->AddHandle(0, [](void * pUser){
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(MIN_SERVO);
+          Serial.println("low level motor");});
 
-        pUnlockMotorDelay->AddHandle(2000, [](void * pUser){
-            Ccontrol* p = (Ccontrol*) pUser;
-            p->SetAllValue(ACK_SERVO);
-            Serial.println("normal level motor");});
+      pUnlockMotorDelay->AddHandle(2000, [](void * pUser){
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(ACK_SERVO);
+          Serial.println("normal level motor");});
 
-        pUnlockMotorDelay->AddHandle(4000, [](void * pUser){
-            Ccontrol* p = (Ccontrol*) pUser;
-            p->SetAllValue(MIN_SERVO);
-            p->b_unlockMotor = true;
-            delete p->pUnlockMotorDelay;
-            //p->pUnlockMotorDelay = 0;
-            Serial.println("unlocking motor finish\n");});}
+      pUnlockMotorDelay->AddHandle(4000, [](void * pUser){
+          Ccontrol* p = (Ccontrol*) pUser;
+          p->SetAllValue(MIN_SERVO);
+          p->b_unlockMotor = true;
+          delete p->pUnlockMotorDelay;
+          //p->pUnlockMotorDelay = 0;
+          Serial.println("unlocking motor finish\n");});}
     pUnlockMotorDelay->Handle();
     return false;
   }
@@ -121,8 +121,7 @@ class Ccontrol
     configPID.BalanceYaw = y;
   }
 
-  void TrimmingTarget(double pitch, double roll, double yaw, double elevation)
-  {
+  void TrimmingTarget(double pitch, double roll, double yaw, double elevation) {
 
   }
 
@@ -145,8 +144,7 @@ class Ccontrol
 
 
 
-  void Start()
-  {
+  void Start() {
     if (!b_unlockMotor) return;
     b_Starting = true;
     for (int i = 0; i < 4; i++)
@@ -154,40 +152,34 @@ class Ccontrol
     Serial.println("Start");
   }
 
-  void Stop()
-  {
+  void Stop() {
     b_Starting = false;
     SetAllValue(MIN_SERVO);
     Serial.println("Stop");
   }
 
-  void SetAllValue(int v)
-  {
+  void SetAllValue(int v) {
     WriteAllControlPwmPin(v, v, v, v);
   }
 
-  void SetPitch(float v)
-  {
+  void SetPitch(float v) {
     v = m_PitchPID->IncPIDCalc(v);
     Speeds[FRONT] -= v;
     Speeds[AFTER] += v;
   }
 
-  void SetPitch(float pp, float ii, float dd, float tt)
-  {
+  void SetPitch(float pp, float ii, float dd, float tt) {
     m_PitchPID->ReSetPID(pp, ii, dd);
     m_PitchPID->ReSetPoint(tt);
   }
 
-  void SetRoll(float v)
-  {
+  void SetRoll(float v) {
     v = m_RollPID->IncPIDCalc(v);
     Speeds[LEFT] -= v;
     Speeds[RIGHT] += v;
   }
 
-  void SetYaw(float v)
-  {
+  void SetYaw(float v) {
     v = m_YawPID->IncPIDCalc(v);
     Speeds[FRONT] -= v;
     Speeds[AFTER] -= v;
@@ -195,8 +187,7 @@ class Ccontrol
     Speeds[RIGHT] += v;
   }
 
-  void SetElevation()
-  {
+  void SetElevation() {
     float v = m_barometer->GetPoint();
     Speeds[FRONT] += v;
     Speeds[AFTER] += v;
@@ -205,24 +196,21 @@ class Ccontrol
     SetPins();
   }
 
-  void AddSpeed()
-  {
+  void AddSpeed() {
     Speeds[FRONT] += 1000;
     Speeds[AFTER] += 1000;
     Speeds[LEFT] += 1000;
     Speeds[RIGHT] += 1000;
   }
 
-  void SubtractSpeed()
-  {
+  void SubtractSpeed(){
     Speeds[FRONT] -= 1000;
     Speeds[AFTER] -= 1000;
     Speeds[LEFT] -= 1000;
     Speeds[RIGHT] -= 1000;
   }
 
-  void Motor()
-  {
+  void Motor(){
     float p = m_ypr->GetPitchPoint() - configPID.BalancePitch;
     float r = m_ypr->GetRollPoint() - configPID.BalanceRoll;
     float y = m_ypr->GetYawPoint() - configPID.BalanceYaw;
@@ -230,13 +218,12 @@ class Ccontrol
     m_RollPID->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
     m_YawPID->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
 
-    if (b_Starting)
-      {
-        if (abs(p) > 0.2) SetPitch(p);
-        if (abs(p) > 0.2) SetRoll(r);
-        if (abs(p) > 0.2) SetYaw(y);
-        SetPins();
-      }
+    if (b_Starting){
+      if (abs(p) > 0.2) SetPitch(p);
+      if (abs(p) > 0.2) SetRoll(r);
+      if (abs(p) > 0.2) SetYaw(y);
+      SetPins();
+    }
   }
 
   long Speeds[4];
@@ -265,8 +252,7 @@ class Ccontrol
   Cpid *m_YawPID = NULL;
   Cpid *m_ElevationPID = NULL;
 
-  void WriteAllControlPwmPin(int f, int a, int l, int r)
-  {
+  void WriteAllControlPwmPin(int f, int a, int l, int r){
     analogWrite(PIN_FRONT, f);
     analogWrite(PIN_AFTER, a);
     analogWrite(PIN_LEFT, l);
