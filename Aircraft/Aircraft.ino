@@ -36,21 +36,24 @@ void setup()
 
 //网络接收数据包
 NetStruct msg;
+ulong lastRecvTime =0;
+bool b_flying = false;
 
 //循环体
 void loop()
 {
-  pControl->GetPitch();
-  pControl->GetYaw();
+  //刷新传感器
+  pControl->FlushSensors();
+  ulong currentTime = millis();
 
+  //循环过程中频繁访问网络,以免遥控端延迟丢包.
   for (int i = 0; i < 10; i++){
     conn->Read(&msg);
     float vf = 0;
     int vi = 0;
     switch (msg.type){
     case TYPE_TIME_SYN://获取飞控运行时间
-      vf =  millis();
-      msg.value = *(ulong*)& vf;
+      msg.value = *(ulong*)& currentTime;
       conn->Send(&msg);
       break;
     case TYPE_POWER://获取电池百分比
@@ -59,27 +62,23 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_A://调整/获取A电调频率
-      pControl->Speeds[0] += *(int*)&msg.value;
-      vf = pControl->Speeds[0];
-      msg.value = *(ulong*)& vf;
+      pControl->Servos[0] += *(int*)&msg.value;
+      msg.value = *(ulong*)&pControl->Servos[0];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_B://调整/获取B电调频率
-      pControl->Speeds[1] +=  *(int*)&msg.value;
-      vf = pControl->Speeds[1];
-      msg.value = *(ulong*)& vf;
+      pControl->Servos[1] += *(int*)&msg.value;
+      msg.value = *(ulong*)&pControl->Servos[1];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_C://调整/获取C电调频率
-      pControl->Speeds[2] +=  *(int*)&msg.value;
-      vf = pControl->Speeds[2];
-      msg.value = *(ulong*)& vf;
+      pControl->Servos[2] += *(int*)&msg.value;
+      msg.value = *(ulong*)&pControl->Servos[2];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_D://调整/获取D电调频率
-      pControl->Speeds[3] +=  *(int*)&msg.value;
-      vf = pControl->Speeds[3];
-      msg.value = *(ulong*)& vf;
+      pControl->Servos[3] += *(int*)&msg.value;
+      msg.value = *(ulong*)&pControl->Servos[3];
       conn->Send(&msg);
       break;
 
@@ -89,17 +88,17 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_PITCH_P:
-      pControl->configPID.PitchP +=vf;
+      pControl->configPID.PitchP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.PitchP;
       conn->Send(&msg);
       break;
     case TYPE_PITCH_I:
-      pControl->configPID.PitchI +=vf;
+      pControl->configPID.PitchI += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.PitchI;
       conn->Send(&msg);
       break;
     case TYPE_PITCH_D:
-      pControl->configPID.PitchD +=vf;
+      pControl->configPID.PitchD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.PitchD;
       conn->Send(&msg);
       break;
@@ -110,17 +109,17 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_ROLL_P:
-      pControl->configPID.RollP +=vf;
+      pControl->configPID.RollP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.RollP;
       conn->Send(&msg);
       break;
     case TYPE_ROLL_I:
-      pControl->configPID.RollI +=vf;
+      pControl->configPID.RollI += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.RollI;
       conn->Send(&msg);
       break;
     case TYPE_ROLL_D:
-      pControl->configPID.RollD +=vf;
+      pControl->configPID.RollD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.RollD;
       conn->Send(&msg);
       break;
@@ -131,17 +130,17 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_YAW_P:
-      pControl->configPID.YawP +=vf;
+      pControl->configPID.YawP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.YawP;
       conn->Send(&msg);
       break;
     case TYPE_YAW_I:
-      pControl->configPID.YawI +=vf;
+      pControl->configPID.YawI += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.YawI;
       conn->Send(&msg);
       break;
     case TYPE_YAW_D:
-      pControl->configPID.YawD +=vf;
+      pControl->configPID.YawD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.YawD;
       conn->Send(&msg);
       break;
@@ -150,17 +149,17 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION_P:
-      pControl->configPID.ElevationP +=vf;
+      pControl->configPID.ElevationP += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.ElevationP;
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION_I:
-      pControl->configPID.ElevationI +=vf;
+      pControl->configPID.ElevationI += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.ElevationI;
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION_D:
-      pControl->configPID.ElevationD +=vf;
+      pControl->configPID.ElevationD += *(float*)&msg.value;
       msg.value = *(ulong*)& pControl->configPID.ElevationD;
       conn->Send(&msg);
       break;
@@ -169,7 +168,7 @@ void loop()
       vf = pControl->UnlockMotor();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
-      if (vf ) pControl->Flying();
+      b_flying = (bool) vf;
       break;
     case TYPE_SELF_STATIONARY://自稳
       vf =  0;
@@ -177,6 +176,7 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_LAND://着陆
+      b_flying = false;
       pControl->Landing();
       conn->Send(&msg);
       break;
@@ -196,5 +196,9 @@ void loop()
     default:
       break;
     }
+  }
+
+  //1s未收到数据,在飞行状态则进入悬停.
+  if (currentTime - lastRecvTime > 1000){
   }
 }

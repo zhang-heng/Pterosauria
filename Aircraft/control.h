@@ -20,7 +20,13 @@
 class Ccontrol
 {
  public:
+  //配置
   StructConfig configPID;
+  //四轴速度值
+  ulong Speeds[4];
+  //四轴电调频率
+  int Servos[4];
+
   Ccontrol(int pinFront, int pinAfter, int pinLeft, int pinRight){
     //四轴四个方向的管脚
     PIN_FRONT = pinFront;
@@ -63,6 +69,13 @@ class Ccontrol
   }
   float GetElevation(){
     return m_compass->GetPoint() - configPID.BalanceYaw;
+  }
+
+  void FlushSensors(){
+    GetPitch();
+    GetRoll();
+    GetYaw();
+    GetElevation();
   }
 
   //飞行处理
@@ -226,9 +239,6 @@ class Ccontrol
     }
   }
 
-  long Speeds[4];
-
-
  private:
   int PIN_FRONT;
   int PIN_AFTER;
@@ -253,6 +263,10 @@ class Ccontrol
   Cpid *m_ElevationPID = NULL;
 
   void WriteAllControlPwmPin(int f, int a, int l, int r){
+    Servos[0] = f;
+    Servos[1] = a;
+    Servos[2] = l;
+    Servos[3] = r;
     analogWrite(PIN_FRONT, f);
     analogWrite(PIN_AFTER, a);
     analogWrite(PIN_LEFT, l);

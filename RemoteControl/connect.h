@@ -44,6 +44,10 @@ class Cconnect
     return  GetValueByType( t,  vIn ,*(ulong*)&vOut);
   }
 
+  bool GetValueByType(NetType t, int vIn ,ulong &vOut){
+    return  GetValueByType( t,  *(ulong*)&vIn ,vOut);
+  }
+
   bool GetValueByType(NetType t, ulong vIn ,ulong &vOut){
     m_SendCount++;
     if (Mirf.dataReady()) Mirf.getData((byte *) &sendbuff);

@@ -44,8 +44,12 @@ float yawD = 0;
 float eleP = 0;
 float eleI = 0;
 float eleD = 0;
-
 float power = 0;
+
+ulong motorA =0;
+ulong motorB =0;
+ulong motorC =0;
+ulong motorD =0;
 
 void loop(){
   Buttons bs = {0, 0, 0, 0, 0};
@@ -101,10 +105,33 @@ void loop(){
   lcd->SetSignal(conn->GetSuccessCount());
 }
 
-
-
 void SerialControl(){
   switch( Serial.read()){
+  case 'a':
+    conn->GetValueByType(TYPE_MOTOR_A, 1,motorA);
+    break;
+  case 'z':
+    conn->GetValueByType(TYPE_MOTOR_A, -1,motorA);
+    break;
+  case 's':
+    conn->GetValueByType(TYPE_MOTOR_B, 1,motorB);
+    break;
+  case 'x':
+    conn->GetValueByType(TYPE_MOTOR_B, -1,motorB);
+    break;
+  case 'd':
+    conn->GetValueByType(TYPE_MOTOR_C, 1,motorC);
+    break;
+  case 'c':
+    conn->GetValueByType(TYPE_MOTOR_C, -1,motorC);
+    break;
+  case 'f':
+    conn->GetValueByType(TYPE_MOTOR_D, 1,motorD);
+    break;
+  case 'v':
+    conn->GetValueByType(TYPE_MOTOR_D, -1,motorD);
+    break;
+
   case '1':
     conn->GetValueByType(TYPE_PITCH_P, 0.01,pitchP);
     break;
