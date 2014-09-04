@@ -6,7 +6,6 @@ class Ccompass
   int16_t mx, my, mz;
   ulong m_lastTime;
   float m_point;
-  float m_adj;
 
  public :
   Ccompass(){
@@ -23,13 +22,10 @@ class Ccompass
       m_lastTime = currentTime;
       mag.getHeading(&mx, &my, &mz);
       float heading = atan2(my, mx);
-      //if(heading < 0) heading += 2 * M_PI;
-      m_point = (heading * 180/M_PI) - m_adj;
-      if(m_point > 180) m_point -= 360;
-      else if(m_point <-180) m_point += 360;
+      if(heading < 0) heading += 2 * M_PI;
+      m_point = (heading * 180/M_PI);
     }
     return m_point;
   }
 
-  void Adjust(float v) { m_adj = v; }
 };

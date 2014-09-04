@@ -3,8 +3,8 @@ class Csonar
  private:
   NewPing * m_sonar;
  public:
-  Csonar(int trigPin, int echoPin, int max_distance){
-    m_sonar = new NewPing(trigPin, echoPin, max_distance);
+  Csonar(int trigPin, int echoPin){
+    m_sonar = new NewPing(trigPin, echoPin);
   }
   int GetDistance(){
     unsigned int uS = m_sonar->ping();

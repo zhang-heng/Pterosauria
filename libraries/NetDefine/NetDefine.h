@@ -32,7 +32,7 @@ enum NetType
     TYPE_ELEVATION_I,
     TYPE_ELEVATION_D,
 
-    TYPE_UNLOCK, //解锁
+    TYPE_UNLOCK_FLY, //解锁飞行
 
     TYPE_SELF_STATIONARY, //自稳
     TYPE_LAND,            //降落

@@ -31,19 +31,29 @@ class Cconnect
   NetStruct sendbuff{0,0,0,0};
   NetStruct recvbuff{0,0,0,0};
 
+  //发送操作指令
   bool CommandByType(NetType t){
     ulong v = 0;
     return  GetValueByType( t,  0 , v);
   }
 
+  //调整参数
+  bool SetValueByType(NetType t, int vIn){
+    ulong v = 0;
+    return  GetValueByType( t, vIn, v);
+  }
+
+  //仅获取
   bool GetValueByType(NetType t, float &vOut){
     return  GetValueByType( t,  0 ,*(ulong*)&vOut);
   }
 
+  //修改并获取
   bool GetValueByType(NetType t, ulong vIn ,float &vOut){
     return  GetValueByType( t,  vIn ,*(ulong*)&vOut);
   }
 
+  //修改并获取
   bool GetValueByType(NetType t, int vIn ,ulong &vOut){
     return  GetValueByType( t,  *(ulong*)&vIn ,vOut);
   }

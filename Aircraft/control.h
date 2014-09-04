@@ -26,6 +26,8 @@ class Ccontrol
   ulong Speeds[4];
   //四轴电调频率
   int Servos[4];
+  //姿态目标
+  float Targets[4];
 
   Ccontrol(int pinFront, int pinAfter, int pinLeft, int pinRight){
     //四轴四个方向的管脚
@@ -46,7 +48,7 @@ class Ccontrol
     //读取气压,暂时不用,精度太差.
     m_barometer = new Cbarometer();
     //声呐获取对地高度,相对气压值精准
-    m_sonar = new Csonar(1,2,3);
+    m_sonar = new Csonar(A6,A7);
 
     //获取rom配置
     ReadRom(&configPID);
@@ -59,13 +61,15 @@ class Ccontrol
 
   ///////////////////刷新各传感器数据///////////////////////
   float GetPitch(){
-    return m_ypr->GetPitchPoint() - configPID.BalancePitch;
+    return m_ypr->GetPitchPoint() - configPID.BalancePitch - Targets[0];
   }
   float GetRoll(){
-    return m_ypr->GetRollPoint() - configPID.BalanceRoll;
+    return m_ypr->GetRollPoint() - configPID.BalanceRoll - Targets[1];
   }
   float GetYaw(){
-    return m_compass->GetPoint() - configPID.BalanceYaw;
+    float v =  m_compass->GetPoint() - Targets[2];;
+    if (v>180) v-=360;
+    return v;
   }
   float GetElevation(){
     return m_compass->GetPoint() - configPID.BalanceElevation;
@@ -78,16 +82,38 @@ class Ccontrol
     GetElevation();
   }
 
-  //飞行处理
-  void Flying(){
-    WriteAllControlPwmPin(Speeds[0],Speeds[1],Speeds[2],Speeds[3]);
+  //姿态控制
+  //pitch roll 为绝对调整, yaw和ele是增量式
+  void MotionPitch(int v){
+    Targets[0] = map (v, -100, 100, -30, 30);//映射为30度调整
   }
+
+  void MotionRoll(int v){
+    Targets[1] = map (v, -100, 100, -30, 30);//映射为30度调整
+  }
+
+  void MotionYaw(int v){
+    Targets[2] += map (v, -100, 100, -1.00, -1.00);
+  }
+
+  void MotionElevation(int v){
+    Targets[3] += map (v, -100, 100, -1.00, -1.00);
+  }
+
+  /* //飞行处理 */
+  /* void Flying(){ */
+  /*   WriteAllControlPwmPin(Speeds[0],Speeds[1],Speeds[2],Speeds[3]); */
+  /* } */
+
   //自稳
   void SelfStationary(){
+    Targets[0] = 0;
+    Targets[1] = 0;
   }
 
   //着陆处理
   void Landing(){
+
   }
 
   //配置写入rom

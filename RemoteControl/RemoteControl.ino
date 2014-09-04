@@ -70,10 +70,14 @@ void loop(){
   };
 
   if (bs.a1){
-    if (bs.a2){
+    if (bs.a2){//飞行端解锁,飞行,自稳.
       leds->NetBlink();
-      conn->CommandByType(TYPE_UNLOCK);
-      conn->CommandByType(TYPE_SELF_STATIONARY);
+      if(cc.lx) conn->SetValueByType(TYPE_PITCH, cc.lx);
+      if(cc.ly) conn->SetValueByType(TYPE_ROLL, cc.ly);
+      if(cc.rx) conn->SetValueByType(TYPE_ELEVATION, cc.rx);
+      if(cc.ry) conn->SetValueByType(TYPE_YAW, cc.ry);
+      if (!cc.lx && !cc.ly && !cc.rx && !cc.ry)
+        conn->CommandByType(TYPE_SELF_STATIONARY);
     }
     else{
       leds->NetOn();

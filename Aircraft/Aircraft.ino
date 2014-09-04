@@ -49,8 +49,7 @@ void loop()
   for (int i = 0; i < 10; i++){
     conn->Read(&msg);
 
-    if(msg.type != TYPE_UNKNOW)
-      lastRecvTime = currentTime;
+    if(msg.type != TYPE_UNKNOW) lastRecvTime = currentTime;
 
     float vf = 0;
     int vi = 0;
@@ -65,7 +64,7 @@ void loop()
       conn->Send(&msg);
       break;
 
-    case TYPE_UNLOCK://解锁电调
+    case TYPE_UNLOCK_FLY://解锁电调处理飞行
       vf = pControl->UnlockMotor();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
@@ -87,22 +86,27 @@ void loop()
       pControl->BalanceAdjust();
       break;
 
+      //姿态调整
     case TYPE_PITCH://调整/获取俯仰状态
+      pControl->MotionPitch(*(int*)msg.value);
       vf =  pControl->GetPitch();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_ROLL://调整/获取横滚状态
+      pControl->MotionRoll(*(int*)msg.value);
       vf = pControl->GetRoll();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_YAW://调整/获取航向状态
+      pControl->MotionYaw(*(int*)msg.value);
       vf = pControl->GetYaw();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION://调整/获取高度状态
+      pControl->MotionElevation(*(int*)msg.value);
       conn->Send(&msg);
       break;
 
