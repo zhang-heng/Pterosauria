@@ -18,10 +18,10 @@ typedef struct STRUCT_CONFIG
   double ElevationI;
   double ElevationD;
 
-  double BalancePitch;
-  double BalanceRoll;
-  double BalanceYaw;
-  double BalanceElevation;
+  double AdjustPitch;
+  double AdjustRoll;
+  double AdjustYaw;
+  double AdjustElevation;
 } StructConfig, *pStructConfig;
 
 #define ADDR_CONFIG 0x30

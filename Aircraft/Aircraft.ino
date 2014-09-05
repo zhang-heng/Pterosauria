@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#include <Servo.h>
 
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
@@ -29,7 +30,7 @@ void setup()
 {
   Serial.begin(115200);
   conn =  new Cconnect(8, 7);
-  pControl =  new Ccontrol(5, 6, 9, 10);
+  pControl =  new Ccontrol();
   pPower = new Cpower(A2);
   Serial.println("Initializing finish");
 }
@@ -64,8 +65,8 @@ void loop()
       conn->Send(&msg);
       break;
 
-    case TYPE_UNLOCK_FLY://解锁电调处理飞行
-      vf = pControl->UnlockMotor();
+    case TYPE_FLY://解锁电调处理飞行
+      vf = pControl->Flying();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;

@@ -6,73 +6,75 @@
 #include "config.h"
 #include "sonar.h"
 
-//低频率解锁电调
-#define MIN_SERVO 110
-//启动频率 实际测试pwm:131-132就能启动
-#define ACK_SERVO 140
-//最大pwm值
-#define MAX_SERVO 250
+#define UNLOCK_SERVO 700//停机
+#define MAX_SERVO 2000//最大速率
 
-//用于参与pid计算的速度值,最终映射到servo值,输出给电调
-#define MIN_SPEED 0
-#define MAX_SPEED 3000
+#define FRONT 0
+#define AFTER 1
+#define LEFT 2
+#define RIGHT 3
+
+#define PITCH 0
+#define ROLL 1
+#define YAW 2
+#define ELEVATION 3
 
 class Ccontrol
 {
+ private:
+  Cypr m_ypr;              //读取MPU6050值,此陀螺仪有效的是倾斜值
+  Cbarometer m_barometer;  //读取气压,暂时不用,精度太差
+  Ccompass m_compass;      //读取HMC5883L值,此磁感获取航向
+  Csonar m_sonar(19,20);   //声呐获取对地高度,相对气压值精准
+
+  //正在着陆
+  bool m_landing = false;
+  //推力?油门?
+  ulong m_power = 0;
+
  public:
+  //姿态
   //配置
   StructConfig configPID;
-  //四轴速度值
-  ulong Speeds[4];
   //四轴电调频率
-  int Servos[4];
+  int ServosValue[4];
   //姿态目标
   float Targets[4];
+  //PID
+  Cpid *m_PIDs[4];
 
-  Ccontrol(int pinFront, int pinAfter, int pinLeft, int pinRight){
-    //四轴四个方向的管脚
-    PIN_FRONT = pinFront;
-    PIN_AFTER = pinAfter;
-    PIN_LEFT = pinLeft;
-    PIN_RIGHT = pinRight;
-    pinMode(PIN_FRONT, OUTPUT);
-    pinMode(PIN_AFTER, OUTPUT);
-    pinMode(PIN_LEFT, OUTPUT);
-    pinMode(PIN_RIGHT, OUTPUT);
+  //电调
+  Servo Servos[4];
+  //电调管脚
+  int ServoPins[4] = {5, 6, 9, 10};
+  //每个电机的具体值有偏差
+  int ServoMin[4] = {800, 1000, 1000, 1000};
 
-    //读取MPU6050值,此陀螺仪有效的是倾斜值
-    m_ypr = new Cypr();
+  Ccontrol(){
+    for(int i =0;i<4;i++){
+      Servos[i].attach(ServoPins[i]);
+      Servos[i].writeMicroseconds(UNLOCK_SERVO);
+      m_PIDs[i] = new Cpid (0,0,0,0);
+    }
     m_ypr->Init();
-    //读取HMC5883L值,此磁感获取航向
-    m_compass =  new Ccompass();
-    //读取气压,暂时不用,精度太差.
-    m_barometer = new Cbarometer();
-    //声呐获取对地高度,相对气压值精准
-    m_sonar = new Csonar(A6,A7);
-
     //获取rom配置
     ReadRom(&configPID);
-    //初始化四参的pid
-    m_PitchPID =  new Cpid(configPID.PitchP, configPID.PitchI, configPID.PitchD, 0);
-    m_RollPID =  new Cpid(configPID.RollP, configPID.RollI, configPID.RollD, 0);
-    m_YawPID =  new Cpid(configPID.YawP, configPID.YawI, configPID.YawP, 0);
-    m_ElevationPID =  new Cpid(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD, 0);
   }
 
   ///////////////////刷新各传感器数据///////////////////////
   float GetPitch(){
-    return m_ypr->GetPitchPoint() - configPID.BalancePitch - Targets[0];
+    return m_ypr->GetPitchPoint() - configPID.AdjustPitch;
   }
   float GetRoll(){
-    return m_ypr->GetRollPoint() - configPID.BalanceRoll - Targets[1];
+    return m_ypr->GetRollPoint() - configPID.AdjustRoll;
   }
   float GetYaw(){
-    float v =  m_compass->GetPoint() - Targets[2];;
+    float v =  m_compass->GetPoint();
     if (v>180) v-=360;
     return v;
   }
   float GetElevation(){
-    return m_compass->GetPoint() - configPID.BalanceElevation;
+    return m_compass->GetPoint() - configPID.AdjustElevation;
   }
 
   void FlushSensors(){
@@ -82,38 +84,44 @@ class Ccontrol
     GetElevation();
   }
 
-  //姿态控制
+  //姿态修改
   //pitch roll 为绝对调整, yaw和ele是增量式
   void MotionPitch(int v){
-    Targets[0] = map (v, -100, 100, -30, 30);//映射为30度调整
+    Targets[PITCH] = map (v, -100, 100, -30, 30);//映射为30度调整
   }
 
   void MotionRoll(int v){
-    Targets[1] = map (v, -100, 100, -30, 30);//映射为30度调整
+    Targets[ROLL] = map (v, -100, 100, -30, 30);//映射为30度调整
   }
 
   void MotionYaw(int v){
-    Targets[2] += map (v, -100, 100, -1.00, -1.00);
+    Targets[YAW] += map (v, -100, 100, -1.00, -1.00);
+    if (Targets[YAW]<0) Targets[YAW] += 360;
+    if (Targets[YAW]>360) Targets[YAW] -= 360;
   }
 
   void MotionElevation(int v){
-    Targets[3] += map (v, -100, 100, -1.00, -1.00);
+    Targets[ELEVATION] += map (v, -100, 100, -1.00, -1.00);
+    if (Targets[ELEVATION]<0) Targets[ELEVATION] = 0;
   }
 
-  /* //飞行处理 */
-  /* void Flying(){ */
-  /*   WriteAllControlPwmPin(Speeds[0],Speeds[1],Speeds[2],Speeds[3]); */
-  /* } */
+  //飞行处理,姿态平衡
+  void Flying(){
+  }
 
   //自稳
   void SelfStationary(){
-    Targets[0] = 0;
-    Targets[1] = 0;
+    Targets[PITCH] = 0;
+    Targets[ROLL] = 0;
+    Flying();
   }
 
   //着陆处理
   void Landing(){
-
+    m_power = 0;
+    Targets[PITCH] = 0;
+    Targets[ROLL] = 0;
+    Flying();
   }
 
   //配置写入rom
@@ -121,33 +129,7 @@ class Ccontrol
     WriteRom(&configPID);
   }
 
-  //解锁电调
-  bool UnlockMotor(){
-    if (b_unlockMotor) return true;
-    if (!pUnlockMotorDelay){
-      pUnlockMotorDelay = new CdelayHandle((void*)this);
-      pUnlockMotorDelay->AddHandle(0, [](void * pUser){
-          Ccontrol* p = (Ccontrol*) pUser;
-          p->SetAllValue(MIN_SERVO);
-          Serial.println("low level motor");});
-
-      pUnlockMotorDelay->AddHandle(2000, [](void * pUser){
-          Ccontrol* p = (Ccontrol*) pUser;
-          p->SetAllValue(ACK_SERVO);
-          Serial.println("normal level motor");});
-
-      pUnlockMotorDelay->AddHandle(4000, [](void * pUser){
-          Ccontrol* p = (Ccontrol*) pUser;
-          p->SetAllValue(MIN_SERVO);
-          p->b_unlockMotor = true;
-          delete p->pUnlockMotorDelay;
-          //p->pUnlockMotorDelay = 0;
-          Serial.println("unlocking motor finish\n");});}
-    pUnlockMotorDelay->Handle();
-    return false;
-  }
-
-  //获取传感器校准
+  //校准传感器
   void BalanceAdjust(){
     float p = m_ypr->GetPitchPoint();
     float r = m_ypr->GetRollPoint();
@@ -163,163 +145,56 @@ class Ccontrol
     configPID.BalanceYaw = y;
   }
 
-  void TrimmingTarget(double pitch, double roll, double yaw, double elevation) {
+  /* void TrimmingTarget(double pitch, double roll, double yaw, double elevation) { */
+  /* } */
 
+  //计算调整值
+  void OptPitch() {
+    m_PIDs[PITCH]->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
+    m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);
+    float v = GetPitch();
+    v = m_PIDs[PITCH]->IncPIDCalc(v);
+    ServosValue[FRONT] -= v;
+    ServosValue[AFTER] += v;
+  }
+
+  void OptRoll() {
+    m_PIDs[ROLL]->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
+    m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
+    float v = GetPitch();
+    v = m_PIDs[ROLL]->IncPIDCalc(v);
+    ServosValue[LEFT] -= v;
+    ServosValue[RIGHT] += v;
+  }
+
+  void OptYaw() {
+    m_PIDs[YAW]->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
+    m_PIDs[YAW]->ReSetPoint(Targets[YAW]);
+    float v = GetPitch();
+    v = m_PIDs[YAW]->IncPIDCalc(v);
+    ServosValue[FRONT] -= v;
+    ServosValue[AFTER] -= v;
+    ServosValue[LEFT] += v;
+    ServosValue[RIGHT] += v;
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  void Start() {
-    if (!b_unlockMotor) return;
-    b_Starting = true;
-    for (int i = 0; i < 4; i++)
-      Speeds[i] = MIN_SPEED;
-    Serial.println("Start");
-  }
-
-  void Stop() {
-    b_Starting = false;
-    SetAllValue(MIN_SERVO);
-    Serial.println("Stop");
-  }
-
-  void SetAllValue(int v) {
-    WriteAllControlPwmPin(v, v, v, v);
-  }
-
-  void SetPitch(float v) {
-    v = m_PitchPID->IncPIDCalc(v);
-    Speeds[FRONT] -= v;
-    Speeds[AFTER] += v;
-  }
-
-  void SetPitch(float pp, float ii, float dd, float tt) {
-    m_PitchPID->ReSetPID(pp, ii, dd);
-    m_PitchPID->ReSetPoint(tt);
-  }
-
-  void SetRoll(float v) {
-    v = m_RollPID->IncPIDCalc(v);
-    Speeds[LEFT] -= v;
-    Speeds[RIGHT] += v;
-  }
-
-  void SetYaw(float v) {
-    v = m_YawPID->IncPIDCalc(v);
-    Speeds[FRONT] -= v;
-    Speeds[AFTER] -= v;
-    Speeds[LEFT] += v;
-    Speeds[RIGHT] += v;
-  }
-
-  void SetElevation() {
-    float v = m_barometer->GetPoint();
-    Speeds[FRONT] += v;
-    Speeds[AFTER] += v;
-    Speeds[LEFT] += v;
-    Speeds[RIGHT] += v;
-    SetPins();
-  }
-
-  void AddSpeed() {
-    Speeds[FRONT] += 1000;
-    Speeds[AFTER] += 1000;
-    Speeds[LEFT] += 1000;
-    Speeds[RIGHT] += 1000;
-  }
-
-  void SubtractSpeed(){
-    Speeds[FRONT] -= 1000;
-    Speeds[AFTER] -= 1000;
-    Speeds[LEFT] -= 1000;
-    Speeds[RIGHT] -= 1000;
-  }
-
-  void Motor(){
-    float p = m_ypr->GetPitchPoint() - configPID.BalancePitch;
-    float r = m_ypr->GetRollPoint() - configPID.BalanceRoll;
-    float y = m_ypr->GetYawPoint() - configPID.BalanceYaw;
-    m_PitchPID->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
-    m_RollPID->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
-    m_YawPID->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
-
-    if (b_Starting){
-      if (abs(p) > 0.2) SetPitch(p);
-      if (abs(p) > 0.2) SetRoll(r);
-      if (abs(p) > 0.2) SetYaw(y);
-      SetPins();
-    }
+  void OptElevation() {
+    m_PIDs[ELEVATION]->ReSetPID(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD);
+    m_PIDs[ELEVATION]->ReSetPoint(Targets[ELEVATION]);
+    float v = GetPitch();
+    v = m_PIDs[ELEVATION]->IncPIDCalc(v);
+    ServosValue[FRONT] += v;
+    ServosValue[AFTER] += v;
+    ServosValue[LEFT] += v;
+    ServosValue[RIGHT] += v;
   }
 
  private:
-  int PIN_FRONT;
-  int PIN_AFTER;
-  int PIN_LEFT;
-  int PIN_RIGHT;
-
-  const int FRONT = 0;
-  const int AFTER = 1;
-  const int LEFT = 2;
-  const int RIGHT = 3;
-  bool b_unlockMotor = false;
-  bool b_Starting = false;
-  CdelayHandle *pUnlockMotorDelay = NULL;
-  Cypr *m_ypr = NULL;
-  Cbarometer * m_barometer = NULL;
-  Ccompass * m_compass = NULL;
-  Csonar * m_sonar = NULL;
-
-  Cpid *m_PitchPID = NULL;
-  Cpid *m_RollPID = NULL;
-  Cpid *m_YawPID = NULL;
-  Cpid *m_ElevationPID = NULL;
-
-  void WriteAllControlPwmPin(int f, int a, int l, int r){
-    Servos[0] = f;
-    Servos[1] = a;
-    Servos[2] = l;
-    Servos[3] = r;
-    analogWrite(PIN_FRONT, f);
-    analogWrite(PIN_AFTER, a);
-    analogWrite(PIN_LEFT, l);
-    analogWrite(PIN_RIGHT, r);
-  }
-
-
-
-
-
-
-
-
-
-  void SetPins()
-  {
-    for (int i = 0; i < 4; i++)
-      {
-        if (Speeds[i] > MAX_SPEED) Speeds[i] = MAX_SPEED;
-        if (Speeds[i] < MIN_SPEED) Speeds[i] = MIN_SPEED;
-      }
-    WriteAllControlPwmPin(map(Speeds[FRONT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-                          map(Speeds[AFTER], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-                          map(Speeds[LEFT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO),
-                          map(Speeds[RIGHT], MIN_SPEED, MAX_SPEED, ACK_SERVO, MAX_SERVO));
+  void WriteAllServos(){
+    for(int i =0;i<4;i++){
+    if(ServosValue[i]>MAX_SERVO) ServosValue[i] = MAX_SERVO;
+    if(ServosValue[i]<ServoMin[i]) ServosValue[i] = ServoMin[i];
+    }
   }
 };
