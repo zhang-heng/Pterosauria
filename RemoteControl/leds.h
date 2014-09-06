@@ -1,18 +1,18 @@
 class Cleds
 {
- public:
+public:
   int m_LatchPin;
   int m_DataPin;
   int m_ClockPin;
 
-  short HeaderMask = 0x0004;
-  short LeftMask[5] = {0x8000, 0x4000, 0x2000, 0x1000, 0x0800};
-  short RightMask[5] = {0x0080, 0x0040, 0x0020, 0x0010, 0x0008};
+  short HeaderMask;
+  short LeftMask[5];
+  short RightMask[5];
 
-  short m_Value = 0x0000;
+  short m_Value;
 
-  long m_LastTime = 0;
-  bool m_Light = false;
+  long m_LastTime ;
+  bool m_Light;
 
   void Write(short v){
     char* c = (char*)&v;
@@ -23,6 +23,20 @@ class Cleds
   }
 
   Cleds(int latchPin, int dataPin, int clockPin){
+    m_Light = false;
+    HeaderMask = 0x0004;
+    
+    LeftMask[0] =0x8000;
+    LeftMask[1] =0x4000;
+    LeftMask[2] =0x2000;
+    LeftMask[3] =0x1000;
+    LeftMask[4] =0x0800; 
+    
+    RightMask[0] =0x0080;
+    RightMask[1] =0x0040;
+    RightMask[2] =0x0020;
+    RightMask[3] =0x0010;
+    RightMask[4] =0x0008;      
     m_LatchPin = latchPin;
     m_DataPin = dataPin;
     m_ClockPin = clockPin;
@@ -50,3 +64,6 @@ class Cleds
     Handle();
   }
 };
+
+
+

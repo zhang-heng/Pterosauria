@@ -29,15 +29,15 @@ class Cstick
   }
 
  private:
-  int m_LeftXPin = 0;
-  int m_LeftYPin = 0;
-  int m_RightXPin = 0;
-  int m_RightYPin = 0;
+  int m_LeftXPin;
+  int m_LeftYPin;
+  int m_RightXPin;
+  int m_RightYPin;
 
-  int m_InitLeftX = 0;
-  int m_InitLeftY = 0;
-  int m_InitRightX = 0;
-  int m_InitRightY = 0;
+  int m_InitLeftX;
+  int m_InitLeftY;
+  int m_InitRightX;
+  int m_InitRightY;
 
   int adjust(int v, int initV){
     int val = v - initV;

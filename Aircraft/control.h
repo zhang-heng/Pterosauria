@@ -25,12 +25,12 @@ class Ccontrol
   Cypr m_ypr;              //读取MPU6050值,此陀螺仪有效的是倾斜值
   Cbarometer m_barometer;  //读取气压,暂时不用,精度太差
   Ccompass m_compass;      //读取HMC5883L值,此磁感获取航向
-  Csonar m_sonar(19,20);   //声呐获取对地高度,相对气压值精准
+  Csonar m_sonar();   //声呐获取对地高度,相对气压值精准
 
   //正在着陆
-  bool m_landing = false;
+  bool m_landing;
   //推力?油门?
-  ulong m_power = 0;
+  ulong m_power;
 
  public:
   //姿态
@@ -46,35 +46,43 @@ class Ccontrol
   //电调
   Servo Servos[4];
   //电调管脚
-  int ServoPins[4] = {5, 6, 9, 10};
+  int ServoPins[4];
   //每个电机的具体值有偏差
-  int ServoMin[4] = {800, 1000, 1000, 1000};
+  int ServoMin[4];
 
   Ccontrol(){
+    ServoPins[0] = 5;
+    ServoPins[1] = 6;
+    ServoPins[2] = 9;
+    ServoPins[3] = 10;
+    ServoMin[0] = 800;
+    ServoMin[1] = 1000;
+    ServoMin[2] = 1000;
+    ServoMin[3] = 1000; 
     for(int i =0;i<4;i++){
       Servos[i].attach(ServoPins[i]);
       Servos[i].writeMicroseconds(UNLOCK_SERVO);
       m_PIDs[i] = new Cpid (0,0,0,0);
     }
-    m_ypr->Init();
+    m_ypr.Init();
     //获取rom配置
     ReadRom(&configPID);
   }
 
   ///////////////////刷新各传感器数据///////////////////////
   float GetPitch(){
-    return m_ypr->GetPitchPoint() - configPID.AdjustPitch;
+    return m_ypr.GetPitchPoint() - configPID.AdjustPitch;
   }
   float GetRoll(){
-    return m_ypr->GetRollPoint() - configPID.AdjustRoll;
+    return m_ypr.GetRollPoint() - configPID.AdjustRoll;
   }
   float GetYaw(){
-    float v =  m_compass->GetPoint();
+    float v =  m_compass.GetPoint();
     if (v>180) v-=360;
     return v;
   }
   float GetElevation(){
-    return m_compass->GetPoint() - configPID.AdjustElevation;
+    return m_compass.GetPoint() - configPID.AdjustElevation;
   }
 
   void FlushSensors(){
@@ -131,18 +139,18 @@ class Ccontrol
 
   //校准传感器
   void BalanceAdjust(){
-    float p = m_ypr->GetPitchPoint();
-    float r = m_ypr->GetRollPoint();
-    float y = m_compass->GetPoint();
+    float p = m_ypr.GetPitchPoint();
+    float r = m_ypr.GetRollPoint();
+    float y = m_compass.GetPoint();
     for (int i = 0 ; i < 100; i++){
-      p = (p + m_ypr->GetPitchPoint()) / 2;
-      r = (r + m_ypr->GetRollPoint()) / 2;
-      y = (y + m_compass->GetPoint()) / 2;
+      p = (p + m_ypr.GetPitchPoint()) / 2;
+      r = (r + m_ypr.GetRollPoint()) / 2;
+      y = (y + m_compass.GetPoint()) / 2;
       delay(20);
     }
-    configPID.BalancePitch = p;
-    configPID.BalanceRoll = r;
-    configPID.BalanceYaw = y;
+    configPID.AdjustPitch = p;
+    configPID.AdjustRoll = r;
+    configPID.AdjustYaw = y;
   }
 
   /* void TrimmingTarget(double pitch, double roll, double yaw, double elevation) { */

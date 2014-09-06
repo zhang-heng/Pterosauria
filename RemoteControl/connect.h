@@ -1,3 +1,4 @@
+
 class Cconnect
 {
  public :
@@ -28,8 +29,8 @@ class Cconnect
     m_RecvCount = 0;
   }
 
-  NetStruct sendbuff{0,0,0,0};
-  NetStruct recvbuff{0,0,0,0};
+  NetStruct sendbuff;
+  NetStruct recvbuff;
 
   //发送操作指令
   bool CommandByType(NetType t){

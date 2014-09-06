@@ -7,10 +7,15 @@
 MPU6050 mpu;
 volatile bool mpuInterrupt = false;
 
+bool dmpReady =false;
+void dmpReadyFun()
+{
+  mpuInterrupt = true;
+}
+
 class Cypr
 {
  private:
-  bool dmpReady = false;
   uint8_t mpuIntStatus;
   uint8_t devStatus;
   uint16_t packetSize;
@@ -19,6 +24,7 @@ class Cypr
   Quaternion q;
   VectorFloat gravity;
   float ypr[3];
+  
   void initYPR(){
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
     Wire.begin();
@@ -40,9 +46,7 @@ class Cypr
       Serial.println(F("MPU6050: Enabling DMP..."));
       mpu.setDMPEnabled(true);
       Serial.println(F("MPU6050: Enabling interrupt detection (Arduino external interrupt 0)..."));
-      attachInterrupt(0, []() {
-          mpuInterrupt = true;
-        }, RISING);
+      attachInterrupt(0, dmpReadyFun, RISING);
       mpuIntStatus = mpu.getIntStatus();
       Serial.println(F("MPU6050: DMP ready! Waiting for first interrupt..."));
       dmpReady = true;

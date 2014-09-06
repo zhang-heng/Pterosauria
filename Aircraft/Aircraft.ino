@@ -66,7 +66,7 @@ void loop()
       break;
 
     case TYPE_FLY://解锁电调处理飞行
-      vf = pControl->Flying();
+      pControl->Flying();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
@@ -120,22 +120,22 @@ void loop()
       break;
 
     case TYPE_MOTOR_A://调整/获取A电调频率
-      pControl->Servos[0] += *(int*)&msg.value;
+      pControl->ServosValue[0] += *(int*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[0];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_B://调整/获取B电调频率
-      pControl->Servos[1] += *(int*)&msg.value;
+      pControl->ServosValue[1] += *(int*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[1];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_C://调整/获取C电调频率
-      pControl->Servos[2] += *(int*)&msg.value;
+      pControl->ServosValue[2] += *(int*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[2];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_D://调整/获取D电调频率
-      pControl->Servos[3] += *(int*)&msg.value;
+      pControl->ServosValue[3] += *(int*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[3];
       conn->Send(&msg);
       break;
