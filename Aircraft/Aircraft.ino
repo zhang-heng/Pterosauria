@@ -42,6 +42,7 @@ ulong lastRecvTime =0;
 //循环体
 void loop()
 {
+  DebugShow();
   //刷新传感器
   pControl->FlushSensors();
   ulong currentTime = millis();
@@ -49,9 +50,7 @@ void loop()
   //循环过程中频繁访问网络,以免遥控端延迟丢包.
   for (int i = 0; i < 10; i++){
     conn->Read(&msg);
-
     if(msg.type != TYPE_UNKNOW) lastRecvTime = currentTime;
-
     float vf = 0;
     int vi = 0;
     switch (msg.type){
@@ -200,7 +199,6 @@ void loop()
       msg.value = *(ulong*)& pControl->configPID.ElevationD;
       conn->Send(&msg);
       break;
-
     default:
       break;
     }
@@ -208,6 +206,55 @@ void loop()
 
   //1s未收到数据,在飞行状态则进入悬停.
   if (currentTime - lastRecvTime > 1000){
-    pControl->SelfStationary();
+    //pControl->SelfStationary();
   }
+  for(int i =0; i<4 ;i++)
+    pControl->Servos[i].writeMicroseconds(pControl->ServosValue[i]);
 }
+
+void DebugShow(){
+  if (!Serial.available()) return;
+  switch(Serial.read()){
+  case '1':
+    pControl->ServosValue[0]++;
+    break;
+  case '2':
+    pControl->ServosValue[1]++;
+    break;
+  case '3':
+    pControl->ServosValue[2]++;
+    break;
+  case '4':
+    pControl->ServosValue[3]++;
+    break;
+  case 'q':
+    pControl->ServosValue[0]--;
+    break;
+  case 'w':
+    pControl->ServosValue[1]--;
+    break;
+  case 'e':
+    pControl->ServosValue[2]--;
+    break;
+  case 'r':
+    pControl->ServosValue[3]--;
+    break;
+  }
+  Serial.print("prye"); 
+  Serial.print("\t"); 
+  Serial.print(pControl->GetPitch());
+  Serial.print("\t");
+  Serial.print(pControl->GetRoll());
+  Serial.print("\t");
+  Serial.print(pControl->GetYaw());
+  Serial.print("\t");
+  Serial.print(pControl->GetElevation()); 
+  Serial.print("\t");
+  Serial.print("servos"); 
+  for(int i =0;i<4;i++){
+    Serial.print("\t");
+    Serial.print(pControl->ServosValue[i]);
+  }
+  Serial.print("\n");
+}
+

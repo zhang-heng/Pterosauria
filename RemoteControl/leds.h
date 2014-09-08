@@ -24,6 +24,7 @@ public:
 
   Cleds(int latchPin, int dataPin, int clockPin){
     m_Light = false;
+    m_Value =0;
     HeaderMask = 0x0004;
     
     LeftMask[0] =0x8000;

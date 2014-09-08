@@ -14,6 +14,8 @@ class Ccompass
     mag.initialize();
     Serial.print("HMC5883L: Testing device connections...");
     Serial.print(mag.testConnection() ? "successful\n" : "failed\n");
+    m_point = 0;
+    m_lastTime = millis();
   }
 
   float GetPoint(){

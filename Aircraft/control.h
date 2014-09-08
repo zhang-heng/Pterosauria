@@ -1,4 +1,3 @@
-#include "delayHandle.h"
 #include "pid.h"
 #include "ypr.h"
 #include "barometer.h"
@@ -29,6 +28,8 @@ class Ccontrol
 
   //正在着陆
   bool m_landing;
+  //
+  bool m_flying;
   //推力?油门?
   ulong m_power;
 
@@ -52,18 +53,21 @@ class Ccontrol
 
   Ccontrol(){
     ServoPins[0] = 5;
-    ServoPins[1] = 6;
-    ServoPins[2] = 9;
+    ServoPins[1] = 9;
+    ServoPins[2] = 6;
     ServoPins[3] = 10;
-    ServoMin[0] = 800;
-    ServoMin[1] = 1000;
-    ServoMin[2] = 1000;
-    ServoMin[3] = 1000; 
+    ServoMin[0] = 1050;
+    ServoMin[1] = 1050;
+    ServoMin[2] = 800;
+    ServoMin[3] = 1010; 
     for(int i =0;i<4;i++){
       Servos[i].attach(ServoPins[i]);
+      ServosValue[i] = UNLOCK_SERVO;
       Servos[i].writeMicroseconds(UNLOCK_SERVO);
       m_PIDs[i] = new Cpid (0,0,0,0);
+      Targets[i] = 0;
     }
+    m_power = 0;
     m_ypr.Init();
     //获取rom配置
     ReadRom(&configPID);
@@ -82,7 +86,7 @@ class Ccontrol
     return v;
   }
   float GetElevation(){
-    return m_compass.GetPoint() - configPID.AdjustElevation;
+    return m_power;//m_compass.GetPoint() - configPID.AdjustElevation;
   }
 
   void FlushSensors(){
@@ -115,6 +119,11 @@ class Ccontrol
 
   //飞行处理,姿态平衡
   void Flying(){
+    for(int i =0;i<4;i++){
+      Serial.print(Targets[i]);
+      Serial.print("\t");
+    }
+    Serial.print("\n");
   }
 
   //自稳
@@ -197,8 +206,7 @@ class Ccontrol
     ServosValue[LEFT] += v;
     ServosValue[RIGHT] += v;
   }
-
- private:
+ 
   void WriteAllServos(){
     for(int i =0;i<4;i++){
     if(ServosValue[i]>MAX_SERVO) ServosValue[i] = MAX_SERVO;

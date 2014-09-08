@@ -20,11 +20,11 @@ Cconnect *conn;
 
 void setup(){
   Serial.begin(115200);
+  stick = new Cstick(2, 3, 1, 0);
   conn = new Cconnect (10, 9);
   leds = new Cleds(5, 3, 2);
   lcd = new Clcd(4, 3, 2);
   buttn = new Cbuttn (6, 7, 2);
-  stick = new Cstick(2, 3, 1, 0);
   Serial.println ("init finish");
 }
 
@@ -72,12 +72,25 @@ void loop(){
   if (bs.a1){
     if (bs.a2){//飞行端解锁,飞行,自稳.
       leds->NetBlink();
-      if(cc.lx) conn->SetValueByType(TYPE_PITCH, cc.lx);
-      if(cc.ly) conn->SetValueByType(TYPE_ROLL, cc.ly);
-      if(cc.rx) conn->SetValueByType(TYPE_ELEVATION, cc.rx);
-      if(cc.ry) conn->SetValueByType(TYPE_YAW, cc.ry);
-      if (!cc.lx && !cc.ly && !cc.rx && !cc.ry)
+      conn->CommandByType(TYPE_FLY);
+      if (!cc.lx && !cc.ly && !cc.rx && !cc.ry){
         conn->CommandByType(TYPE_SELF_STATIONARY);
+      }else{
+        if(cc.lx) conn->SetValueByType(TYPE_PITCH, cc.lx);
+        if(cc.ly) conn->SetValueByType(TYPE_ROLL, cc.ly);
+        if(cc.rx) conn->SetValueByType(TYPE_ELEVATION, cc.rx);
+        if(cc.ry) conn->SetValueByType(TYPE_YAW, cc.ry);
+        Serial.print("stick:");
+        Serial.print("\t");
+        Serial.print(cc.lx);
+        Serial.print("\t");
+        Serial.print(cc.ly);
+        Serial.print("\t");
+        Serial.print(cc.rx);
+        Serial.print("\t");
+        Serial.print(cc.ry);
+        Serial.print("\n");
+      }
     }
     else{
       leds->NetOn();
@@ -86,6 +99,7 @@ void loop(){
   }
   else{
     leds->NetOff();
+    conn->CommandByType(TYPE_LAND);
     conn->GetValueByType(TYPE_PITCH_P, pitchP);
     conn->GetValueByType(TYPE_PITCH_I, pitchI);
     conn->GetValueByType(TYPE_PITCH_D, pitchD);

@@ -27,45 +27,14 @@ class Clcd
       pinMode(m_ClockPin, OUTPUT);
 
       srlcd = new ShiftRegLCD(m_DataPin, m_ClockPin, m_LatchPin, 2);
-      uint8_t pitch[8] = {0x0, 0x4, 0xe, 0x4, 0x4, 0x4, 0x4, 0x0};
-      uint8_t roll[8] = {0x0, 0x0, 0x0, 0x4, 0x1f, 0x0, 0x0, 0x0};
-      uint8_t yaw[8] = {0x0, 0xe, 0x5, 0x4, 0x4, 0x14, 0xe, 0x0};
-      uint8_t elevation[8] = {0x0, 0x1b, 0x0, 0x4, 0x4, 0x0, 0x1b, 0x0};
 
-      srlcd->createChar(PIC_PITCH, pitch);
-      srlcd->createChar(PIC_ROLL, roll);
-      srlcd->createChar(PIC_YAW, yaw);
-      srlcd->createChar(PIC_ELEVATION, elevation);
-      srlcd->setCursor(0, 1);
-      srlcd->write(PIC_PITCH);
-      srlcd->setCursor(4, 1);
-      srlcd->write(PIC_ROLL);
-      srlcd->setCursor(8, 1);
-      srlcd->write(PIC_YAW);
-      srlcd->setCursor(12, 1);
-      srlcd->write(PIC_ELEVATION);
     }
 
     void Show(float p, float r, float y, float e){
-      srlcd->setCursor(1, 1);
-      srlcd->print("   ");
-      srlcd->setCursor(1, 1);
-      srlcd->print((int)p);
-
-      srlcd->setCursor(5, 1);
-      srlcd->print("   ");
-      srlcd->setCursor(5, 1);
-      srlcd->print((int)r);
-
-      srlcd->setCursor(9, 1);
-      srlcd->print("   ");
-      srlcd->setCursor(9, 1);
-      srlcd->print((int)y);
-
-      srlcd->setCursor(13, 1);
-      srlcd->print("   ");
-      srlcd->setCursor(13, 1);
-      srlcd->print((int)e);
+      ShowP((int)p);
+      ShowI((int)r);
+      ShowY((int)y);
+      ShowE((int)e);
     }
 
     //0 - 100
@@ -85,5 +54,46 @@ class Clcd
       srlcd->createChar(PIC_SIGNAL,  signal);
       srlcd->setCursor(1, 0);
       srlcd->write(PIC_SIGNAL);
+    }
+    
+    private:
+    void ShowP(int v){
+      uint8_t pic[8] = {0x0, 0x4, 0xe, 0x4, 0x4, 0x4, 0x4, 0x0};
+      v<0?pic[7]|=0x01:pic[0]|=0x01;
+      srlcd->createChar(PIC_PITCH, pic);
+      srlcd->setCursor(0, 1);
+      srlcd->write(PIC_PITCH);
+      srlcd->print(abs(v));
+      srlcd->print("  ");
+    }
+    
+    void ShowI(int v){
+      uint8_t pic[8] = {0x0, 0x0, 0x0, 0x4, 0x1f, 0x0, 0x0, 0x0};
+      v<0?pic[7]|=0x01:pic[0]|=0x01;
+      srlcd->createChar(PIC_ROLL, pic);
+      srlcd->setCursor(4, 1);
+      srlcd->write(PIC_ROLL);
+      srlcd->print(abs(v));
+      srlcd->print("  ");
+    }
+    
+    void ShowY(int v){
+      uint8_t pic[8] = {0x0, 0xe, 0x5, 0x4, 0x4, 0x14, 0xe, 0x0};
+      v<0?pic[7]|=0x01:pic[0]|=0x01;
+      srlcd->createChar(PIC_YAW, pic);
+      srlcd->setCursor(8, 1);
+      srlcd->write(PIC_YAW);
+      srlcd->print(abs(v));
+      srlcd->print("  ");
+    }
+    
+    void ShowE(int v){
+      uint8_t pic[8] = {0x0, 0x1b, 0x0, 0x4, 0x4, 0x0, 0x1b, 0x0};
+      v<0?pic[7]|=0x01:pic[0]|=0x01;
+      srlcd->createChar(PIC_ELEVATION, pic);
+      srlcd->setCursor(12, 1);
+      srlcd->write(PIC_ELEVATION);
+      srlcd->print(abs(v));
+      srlcd->print("  ");
     }
 };

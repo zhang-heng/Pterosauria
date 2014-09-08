@@ -4,8 +4,8 @@ class Csonar
   NewPing * m_sonar;
  public:
   Csonar(){
-    int trigPin = 19;
-    int echoPin = 20;
+    int trigPin = A6;
+    int echoPin = A7;
     m_sonar = new NewPing(trigPin, echoPin);
   }
   int GetDistance(){
