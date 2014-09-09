@@ -98,22 +98,22 @@ class Ccontrol
 
   //姿态修改
   //pitch roll 为绝对调整, yaw和ele是增量式
-  void MotionPitch(int v){
-    Targets[PITCH] = map (v, -100, 100, -30, 30);//映射为30度调整
+  void MotionPitch(float v){
+    Targets[PITCH] = map (v, -100, 100, -15, 15);//映射为15度调整
   }
 
-  void MotionRoll(int v){
-    Targets[ROLL] = map (v, -100, 100, -30, 30);//映射为30度调整
+  void MotionRoll(float v){
+    Targets[ROLL] = map (v, -100, 100, -15, 15);//映射为15度调整
   }
 
-  void MotionYaw(int v){
-    Targets[YAW] += map (v, -100, 100, -1.00, -1.00);
+  void MotionYaw(float v){
+    Targets[YAW] += v/100;
     if (Targets[YAW]<0) Targets[YAW] += 360;
     if (Targets[YAW]>360) Targets[YAW] -= 360;
   }
 
-  void MotionElevation(int v){
-    Targets[ELEVATION] += map (v, -100, 100, -1.00, -1.00);
+  void MotionElevation(float v){
+    Targets[ELEVATION] += v/100;
     if (Targets[ELEVATION]<0) Targets[ELEVATION] = 0;
   }
 
@@ -135,10 +135,11 @@ class Ccontrol
 
   //着陆处理
   void Landing(){
+    Serial.println("Landing");
     m_power = 0;
     Targets[PITCH] = 0;
     Targets[ROLL] = 0;
-    Flying();
+    WriteAllServos();
   }
 
   //配置写入rom

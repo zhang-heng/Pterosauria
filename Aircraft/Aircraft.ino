@@ -86,27 +86,43 @@ void loop()
       pControl->BalanceAdjust();
       break;
 
-      //姿态调整
-    case TYPE_PITCH://调整/获取俯仰状态
-      pControl->MotionPitch(*(int*)msg.value);
+      //期望姿态调整
+    case TYPE_PITCH_DESIRED://调整俯仰状态
+      pControl->MotionPitch(*(float*)&msg.value); 
+      conn->Send(&msg);
+      break;
+    case TYPE_ROLL_DESIRED://调整横滚状态
+      pControl->MotionRoll(*(float*)&msg.value); 
+      conn->Send(&msg);
+      break;
+    case TYPE_YAW_DESIRED://调整航向状态
+      pControl->MotionYaw(*(float*)&msg.value); 
+      conn->Send(&msg);
+      break;
+    case TYPE_ELEVATION_DESIRED://调整高度状态
+      pControl->MotionElevation(*(float*)&msg.value);
+      conn->Send(&msg);
+      break;
+      
+      //当前姿态获取
+    case TYPE_PITCH_CURRENT://获取当前俯仰状态 
       vf =  pControl->GetPitch();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_ROLL://调整/获取横滚状态
-      pControl->MotionRoll(*(int*)msg.value);
+    case TYPE_ROLL_CURRENT://获取当前横滚状态 
       vf = pControl->GetRoll();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_YAW://调整/获取航向状态
-      pControl->MotionYaw(*(int*)msg.value);
+    case TYPE_YAW_CURRENT://获取当前航向状态 
       vf = pControl->GetYaw();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_ELEVATION://调整/获取高度状态
-      pControl->MotionElevation(*(int*)msg.value);
+    case TYPE_ELEVATION_CURRENT://获取当前高度状态 
+      vf = pControl->GetElevation();
+      msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
 
@@ -119,22 +135,22 @@ void loop()
       break;
 
     case TYPE_MOTOR_A://调整/获取A电调频率
-      pControl->ServosValue[0] += *(int*)&msg.value;
+      pControl->ServosValue[0] += *(float*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[0];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_B://调整/获取B电调频率
-      pControl->ServosValue[1] += *(int*)&msg.value;
+      pControl->ServosValue[1] += *(float*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[1];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_C://调整/获取C电调频率
-      pControl->ServosValue[2] += *(int*)&msg.value;
+      pControl->ServosValue[2] += *(float*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[2];
       conn->Send(&msg);
       break;
     case TYPE_MOTOR_D://调整/获取D电调频率
-      pControl->ServosValue[3] += *(int*)&msg.value;
+      pControl->ServosValue[3] += *(float*)&msg.value;
       msg.value = *(ulong*)&pControl->Servos[3];
       conn->Send(&msg);
       break;

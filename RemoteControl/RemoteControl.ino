@@ -20,7 +20,7 @@ Cconnect *conn;
 
 void setup(){
   Serial.begin(115200);
-  stick = new Cstick(2, 3, 1, 0);
+  stick = new Cstick(3,2,0,1);
   conn = new Cconnect (10, 9);
   leds = new Cleds(5, 3, 2);
   lcd = new Clcd(4, 3, 2);
@@ -60,10 +60,10 @@ void loop(){
 
   conn->GetValueByType(TYPE_POWER, power);
 
-  conn->GetValueByType(TYPE_PITCH, pitch);
-  conn->GetValueByType(TYPE_ROLL, roll);
-  conn->GetValueByType(TYPE_YAW, yaw);
-  conn->GetValueByType(TYPE_ELEVATION, ele);
+  conn->GetValueByType(TYPE_PITCH_CURRENT, pitch);
+  conn->GetValueByType(TYPE_ROLL_CURRENT, roll);
+  conn->GetValueByType(TYPE_YAW_CURRENT, yaw);
+  conn->GetValueByType(TYPE_ELEVATION_CURRENT, ele);
 
   ulong  stickv [4] = {
     cc.lx, cc.ly, cc.rx, cc.ry
@@ -76,10 +76,6 @@ void loop(){
       if (!cc.lx && !cc.ly && !cc.rx && !cc.ry){
         conn->CommandByType(TYPE_SELF_STATIONARY);
       }else{
-        if(cc.lx) conn->SetValueByType(TYPE_PITCH, cc.lx);
-        if(cc.ly) conn->SetValueByType(TYPE_ROLL, cc.ly);
-        if(cc.rx) conn->SetValueByType(TYPE_ELEVATION, cc.rx);
-        if(cc.ry) conn->SetValueByType(TYPE_YAW, cc.ry);
         Serial.print("stick:");
         Serial.print("\t");
         Serial.print(cc.lx);
@@ -91,6 +87,22 @@ void loop(){
         Serial.print(cc.ry);
         Serial.print("\n");
       }
+      if(cc.lx) {
+        conn->SetValueByType(TYPE_ROLL_DESIRED, cc.lx);
+        leds->RollBlink();
+        }else leds->RollOff();
+      if(cc.ly){ 
+        conn->SetValueByType(TYPE_PITCH_DESIRED, cc.ly);
+        leds->PitchBlink();
+        }else leds->PitchOff();
+      if(cc.rx) {
+        conn->SetValueByType(TYPE_YAW_DESIRED, cc.rx);
+        leds->YawBlink();
+        }else leds->YawOff();
+      if(cc.ry) {
+        conn->SetValueByType(TYPE_ELEVATION_DESIRED, cc.ry);
+        leds->EleBlink();
+        }else leds->EleOff();
     }
     else{
       leds->NetOn();

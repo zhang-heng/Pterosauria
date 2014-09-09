@@ -33,33 +33,27 @@ class Cconnect
   NetStruct recvbuff;
 
   //发送操作指令
-  bool CommandByType(NetType t){
-    ulong v = 0;
-    return  GetValueByType( t,  0 , v);
+  bool CommandByType(NetType t){ 
+    return  SetValueByType( t,  0);
   }
 
   //调整参数
-  bool SetValueByType(NetType t, int vIn){
+  bool SetValueByType(NetType t, float vIn){
     ulong v = 0;
-    return  GetValueByType( t, vIn, v);
+    return  GetValue( t, *(ulong*)&vIn, v);
   }
 
   //仅获取
   bool GetValueByType(NetType t, float &vOut){
-    return  GetValueByType( t,  0 ,*(ulong*)&vOut);
+    return  GetValue( t,  0 ,*(ulong*)&vOut);
   }
 
   //修改并获取
-  bool GetValueByType(NetType t, ulong vIn ,float &vOut){
-    return  GetValueByType( t,  vIn ,*(ulong*)&vOut);
+  bool GetValueByType(NetType t, float vIn ,float &vOut){
+    return  GetValue( t,  *(ulong*)&vIn ,*(ulong*)&vOut);
   }
 
-  //修改并获取
-  bool GetValueByType(NetType t, int vIn ,ulong &vOut){
-    return  GetValueByType( t,  *(ulong*)&vIn ,vOut);
-  }
-
-  bool GetValueByType(NetType t, ulong vIn ,ulong &vOut){
+  bool GetValue(NetType t, ulong vIn ,ulong &vOut){
     m_SendCount++;
     if (Mirf.dataReady()) Mirf.getData((byte *) &sendbuff);
     sendbuff.seq++;

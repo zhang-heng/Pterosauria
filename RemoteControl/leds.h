@@ -55,6 +55,46 @@ public:
     m_Value &=~HeaderMask;
     Handle();
   }
+  
+  void PitchBlink(){
+    m_Value^= LeftMask[0];
+    Handle();
+  }
+  
+  void PitchOff(){
+    m_Value &=~LeftMask[0];
+    Handle();
+  }
+  
+  void RollBlink(){
+    m_Value^= LeftMask[1];
+    Handle();
+  }
+  
+  void RollOff(){
+    m_Value &=~LeftMask[1];
+    Handle();
+  }
+  
+  void EleBlink(){
+    m_Value^= RightMask[0];
+    Handle();
+  }
+  
+  void EleOff(){
+    m_Value &=~RightMask[0];
+    Handle();
+  }
+  
+  void YawBlink(){
+    m_Value^= RightMask[1];
+    Handle();
+  }
+  
+  void YawOff(){
+    m_Value &=~RightMask[1];
+    Handle();
+  }
 
   void Handle(){
     Write(m_Value);

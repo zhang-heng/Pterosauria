@@ -1,9 +1,9 @@
 typedef struct COORDINATE
 {
-  int lx;
-  int ly;
-  int rx;
-  int ry;
+  float lx;
+  float ly;
+  float rx;
+  float ry;
 }
   Coordinate, *pCoordinate;
 
@@ -22,10 +22,10 @@ class Cstick
   }
 
   void Read(Coordinate * c){
-    c->lx = adjust(analogRead(m_LeftXPin) , m_InitLeftX);
-    c->ly = -adjust(analogRead(m_LeftYPin) , m_InitLeftY);
-    c->rx = adjust(analogRead(m_RightXPin) , m_InitRightX);
-    c->ry = -adjust(analogRead(m_RightYPin) , m_InitRightY);
+    c->lx = -adjust(analogRead(m_LeftXPin) , m_InitLeftX);
+    c->ly = adjust(analogRead(m_LeftYPin) , m_InitLeftY);
+    c->rx = -adjust(analogRead(m_RightXPin) , m_InitRightX);
+    c->ry = adjust(analogRead(m_RightYPin) , m_InitRightY);
   }
 
  private:

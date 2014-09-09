@@ -12,22 +12,26 @@ enum NetType
     TYPE_MOTOR_C,   //电机C速度
     TYPE_MOTOR_D,   //电机D速度
 
-    TYPE_PITCH,     //俯仰
+	TYPE_PITCH_DESIRED,  //期望俯仰
+    TYPE_PITCH_CURRENT,  //当前俯仰
     TYPE_PITCH_P,
     TYPE_PITCH_I,
     TYPE_PITCH_D,
 
-    TYPE_ROLL,      //横滚
+    TYPE_ROLL_DESIRED,  //期望横滚
+    TYPE_ROLL_CURRENT,  //当前横滚
     TYPE_ROLL_P,
     TYPE_ROLL_I,
     TYPE_ROLL_D,
 
-    TYPE_YAW,       //航向
+    TYPE_YAW_DESIRED,  //期望航向
+    TYPE_YAW_CURRENT,  //当前航向
     TYPE_YAW_P,
     TYPE_YAW_I,
     TYPE_YAW_D,
 
-    TYPE_ELEVATION, //海拔
+    TYPE_ELEVATION_DESIRED,  //期望航向
+    TYPE_ELEVATION_CURRENT,  //当前海拔
     TYPE_ELEVATION_P,
     TYPE_ELEVATION_I,
     TYPE_ELEVATION_D,
