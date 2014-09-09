@@ -100,18 +100,6 @@ void loop(){
   else{
     leds->NetOff();
     conn->CommandByType(TYPE_LAND);
-    conn->GetValueByType(TYPE_PITCH_P, pitchP);
-    conn->GetValueByType(TYPE_PITCH_I, pitchI);
-    conn->GetValueByType(TYPE_PITCH_D, pitchD);
-    conn->GetValueByType(TYPE_ROLL_P, rollP);
-    conn->GetValueByType(TYPE_ROLL_I, rollI);
-    conn->GetValueByType(TYPE_ROLL_D, rollD);
-    conn->GetValueByType(TYPE_YAW_P, yawP);
-    conn->GetValueByType(TYPE_YAW_I, yawI);
-    conn->GetValueByType(TYPE_YAW_D, yawD);
-    conn->GetValueByType(TYPE_ELEVATION_P, eleP);
-    conn->GetValueByType(TYPE_ELEVATION_I, eleI);
-    conn->GetValueByType(TYPE_ELEVATION_D, eleD);
 
     if (bs.b1){
       conn->CommandByType(TYPE_INIT_BALANCE);
@@ -125,106 +113,47 @@ void loop(){
 }
 
 void SerialControl(){
-  switch( Serial.read()){
-  case 'a':
-    conn->GetValueByType(TYPE_MOTOR_A, 1,motorA);
-    break;
-  case 'z':
-    conn->GetValueByType(TYPE_MOTOR_A, -1,motorA);
-    break;
-  case 's':
-    conn->GetValueByType(TYPE_MOTOR_B, 1,motorB);
-    break;
-  case 'x':
-    conn->GetValueByType(TYPE_MOTOR_B, -1,motorB);
-    break;
-  case 'd':
-    conn->GetValueByType(TYPE_MOTOR_C, 1,motorC);
-    break;
-  case 'c':
-    conn->GetValueByType(TYPE_MOTOR_C, -1,motorC);
-    break;
-  case 'f':
-    conn->GetValueByType(TYPE_MOTOR_D, 1,motorD);
-    break;
-  case 'v':
-    conn->GetValueByType(TYPE_MOTOR_D, -1,motorD);
-    break;
-
-  case '1':
-    conn->GetValueByType(TYPE_PITCH_P, 0.01,pitchP);
-    break;
-  case 'q':
-    conn->GetValueByType(TYPE_PITCH_P, -0.01,pitchP);
-    break;
-  case '2':
-    conn->GetValueByType(TYPE_PITCH_I, 0.01,pitchI);
-    break;
-  case 'w':
-    conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);
-    break;
-  case '3':
-    conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);
-    break;
-  case 'e':
-    conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);
-    break;
-
-  case '4':
-    conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);
-    break;
-  case 'r':
-    conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);
-    break;
-  case '5':
-    conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);
-    break;
-  case 't':
-    conn->GetValueByType(TYPE_ROLL_I, -0.01,rollI);
-    break;
-  case '6':
-    conn->GetValueByType(TYPE_ROLL_D, 0.01,rollD);
-    break;
-  case 'y':
-    conn->GetValueByType(TYPE_ROLL_D, -0.01,rollD);
-    break;
-
-  case '7':
-    conn->GetValueByType(TYPE_YAW_P, 0.01,yawP);
-    break;
-  case 'u':
-    conn->GetValueByType(TYPE_YAW_P, -0.01,yawP);
-    break;
-  case '8':
-    conn->GetValueByType(TYPE_YAW_I, 0.01,yawI);
-    break;
-  case 'i':
-    conn->GetValueByType(TYPE_YAW_I, -0.01,yawI);
-    break;
-  case '9':
-    conn->GetValueByType(TYPE_YAW_D, 0.01,yawD);
-    break;
-  case 'o':
-    conn->GetValueByType(TYPE_YAW_D, -0.01,yawD);
-    break;
-
-  case '0':
-    conn->GetValueByType(TYPE_ELEVATION_P, 0.01,eleP);
-    break;
-  case 'p':
-    conn->GetValueByType(TYPE_ELEVATION_P, -0.01,eleP);
-    break;
-  case '-':
-    conn->GetValueByType(TYPE_ELEVATION_I, 0.01,eleI);
-    break;
-  case '[':
-    conn->GetValueByType(TYPE_ELEVATION_I, -0.01,eleI);
-    break;
-  case '=':
-    conn->GetValueByType(TYPE_ELEVATION_D, 0.01,eleD);
-    break;
-  case ']':
-    conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);
-    break;
+  switch(Serial.read()){
+  case '1':conn->GetValueByType(TYPE_PITCH_P, 0.01,pitchP);break;
+  case 'q':conn->GetValueByType(TYPE_PITCH_P, -0.01,pitchP);break;
+  case '2':conn->GetValueByType(TYPE_PITCH_I, 0.01,pitchI);break;
+  case 'w':conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);break;
+  case '3':conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);break;
+  case 'e':conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);break;
+  case '4':conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);break;
+  case 'r':conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);break;
+  case '5':conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);break;
+  case 't':conn->GetValueByType(TYPE_ROLL_I, -0.01,rollI);break;
+  case '6':conn->GetValueByType(TYPE_ROLL_D, 0.01,rollD);break;
+  case 'y':conn->GetValueByType(TYPE_ROLL_D, -0.01,rollD);break;
+  case '7':conn->GetValueByType(TYPE_YAW_P, 0.01,yawP);break;
+  case 'u':conn->GetValueByType(TYPE_YAW_P, -0.01,yawP);break;
+  case '8':conn->GetValueByType(TYPE_YAW_I, 0.01,yawI);break;
+  case 'i':conn->GetValueByType(TYPE_YAW_I, -0.01,yawI);break;
+  case '9':conn->GetValueByType(TYPE_YAW_D, 0.01,yawD);break;
+  case 'o':conn->GetValueByType(TYPE_YAW_D, -0.01,yawD);break;
+  case '0':conn->GetValueByType(TYPE_ELEVATION_P, 0.01,eleP);break;
+  case 'p':conn->GetValueByType(TYPE_ELEVATION_P, -0.01,eleP);break;
+  case '-':conn->GetValueByType(TYPE_ELEVATION_I, 0.01,eleI);break;
+  case '[':conn->GetValueByType(TYPE_ELEVATION_I, -0.01,eleI);break;
+  case '=':conn->GetValueByType(TYPE_ELEVATION_D, 0.01,eleD);break;
+  case ']':conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);break;
+  defult:return;
   }
+  Serial.print("pitchPID:\t");
+  Serial.print(pitchP);Serial.print("\t");
+  Serial.print(pitchI);Serial.print("\t");
+  Serial.print(pitchD);Serial.print("\t");
+  Serial.print("rollPID:\t");
+  Serial.print(rollP);Serial.print("\t");
+  Serial.print(rollI);Serial.print("\t");
+  Serial.print(rollD);Serial.print("\t");
+  Serial.print("yawPID:\t");
+  Serial.print(yawP);Serial.print("\t");
+  Serial.print(yawI);Serial.print("\t");
+  Serial.print(yawD);Serial.print("\t");
+  Serial.print("elePID:\t");
+  Serial.print(eleP);Serial.print("\t");
+  Serial.print(eleI);Serial.print("\t");
+  Serial.print(eleD);Serial.print("\n");
 }
