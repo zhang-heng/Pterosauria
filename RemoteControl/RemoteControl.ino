@@ -69,6 +69,9 @@ void loop(){
     cc.lx, cc.ly, cc.rx, cc.ry
   };
 
+  if (bs.b3){
+    conn->CommandByType(TYPE_WRITE_CONFIG);
+  }
   if (bs.a1){
     if (bs.a2){//飞行端解锁,飞行,自稳.
       leds->NetBlink();
@@ -122,6 +125,7 @@ void loop(){
   lcd->Show(pitch, roll, yaw, 0);
   lcd->ShowPower(power);
   lcd->SetSignal(conn->GetSuccessCount());
+  SerialControl();
 }
 
 void SerialControl(){
@@ -150,21 +154,34 @@ void SerialControl(){
   case '[':conn->GetValueByType(TYPE_ELEVATION_I, -0.01,eleI);break;
   case '=':conn->GetValueByType(TYPE_ELEVATION_D, 0.01,eleD);break;
   case ']':conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);break;
-  defult:return;
+  case -1: return;
   }
-  Serial.print("pitchPID:\t");
+  
+  conn->GetValueByType(TYPE_PITCH_P, 0,pitchP); 
+  conn->GetValueByType(TYPE_PITCH_I, 0,pitchI);
+  conn->GetValueByType(TYPE_PITCH_D, 0,pitchD);
+  conn->GetValueByType(TYPE_ROLL_P, 0,rollP);
+  conn->GetValueByType(TYPE_ROLL_I, 0,rollI); 
+  conn->GetValueByType(TYPE_ROLL_D, 0,rollD); 
+  conn->GetValueByType(TYPE_YAW_P, 0,yawP); 
+  conn->GetValueByType(TYPE_YAW_I, 0,yawI); 
+  conn->GetValueByType(TYPE_YAW_D, 0,yawD); 
+  conn->GetValueByType(TYPE_ELEVATION_P, 0,eleP); 
+  conn->GetValueByType(TYPE_ELEVATION_I, 0,eleI); 
+  conn->GetValueByType(TYPE_ELEVATION_D, 0,eleD); 
+  Serial.print("pitchPID:");
   Serial.print(pitchP);Serial.print("\t");
   Serial.print(pitchI);Serial.print("\t");
   Serial.print(pitchD);Serial.print("\t");
-  Serial.print("rollPID:\t");
+  Serial.print("rollPID:");
   Serial.print(rollP);Serial.print("\t");
   Serial.print(rollI);Serial.print("\t");
   Serial.print(rollD);Serial.print("\t");
-  Serial.print("yawPID:\t");
+  Serial.print("yawPID:");
   Serial.print(yawP);Serial.print("\t");
   Serial.print(yawI);Serial.print("\t");
   Serial.print(yawD);Serial.print("\t");
-  Serial.print("elePID:\t");
+  Serial.print("elePID:");
   Serial.print(eleP);Serial.print("\t");
   Serial.print(eleI);Serial.print("\t");
   Serial.print(eleD);Serial.print("\n");

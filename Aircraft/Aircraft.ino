@@ -131,6 +131,7 @@ void loop()
       conn->Send(&msg);
       break;
     case TYPE_WRITE_CONFIG://写入配置
+      pControl->SaveConfig();
       conn->Send(&msg);
       break;
 
@@ -222,6 +223,7 @@ void loop()
 
   //1s未收到数据,在飞行状态则进入悬停.
   if (currentTime - lastRecvTime > 1000){
+    pControl->Landing();
     //pControl->SelfStationary();
   }
   for(int i =0; i<4 ;i++)

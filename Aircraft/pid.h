@@ -1,15 +1,15 @@
 class Cpid
 {
  private:
-  double SetPoint; //设定目标 Desired Value
-  double SumError; //误差累计
-  double LastError; //Error[-1]
-  double PrevError; //Error[-2]
-  double Proportion; //比例常数 Proportional Const
-  double Integral; //积分常数 Integral Const
-  double Derivative; //微分常数 Derivative Const
+  float SetPoint; //设定目标 Desired Value
+  float SumError; //误差累计
+  float LastError; //Error[-1]
+  float PrevError; //Error[-2]
+  float Proportion; //比例常数 Proportional Const
+  float Integral; //积分常数 Integral Const
+  float Derivative; //微分常数 Derivative Const
  public :
-  Cpid(double p, double i, double d, double point){
+  Cpid(float p, float i, float d, float point){
     SumError = 0;
     LastError = 0;
     PrevError = 0;
@@ -26,8 +26,8 @@ class Cpid
     SetPoint = 0;
   }
 
-  double IncPIDCalc(double NextPoint){
-    register double iError, iIncpid; //当前误差
+  float IncPIDCalc(float NextPoint){
+    register float iError, iIncpid; //当前误差
     iError = SetPoint - NextPoint; //增量计算
     //E[k]项 - E[k－1]项 + E[k－2]项
     iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError;
@@ -35,15 +35,15 @@ class Cpid
     PrevError = LastError;
     LastError = iError;
     //返回增量值
-    return (iIncpid);
+    return iIncpid;
   }
-  void ReSetPID(double p, double i, double d){
+  void ReSetPID(float p, float i, float d){
     Proportion = p;
     Integral = i;
     Derivative = d;
   }
 
-  void ReSetPoint(double p){
+  void ReSetPoint(float p){
     SetPoint = p;
   }
 };

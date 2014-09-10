@@ -44,7 +44,7 @@ enum NetType
     TYPE_INIT_BALANCE,    //初始化平衡
 
     TYPE_READ_CONFIG,     //读取配置
-    TYPE_WRITE_CONFIG,     //读取配置
+    TYPE_WRITE_CONFIG,     //写配置
 
   };
 

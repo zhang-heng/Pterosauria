@@ -31,14 +31,14 @@ class Ccontrol
   //
   bool m_flying;
   //推力?油门?
-  ulong m_power;
+  float m_power;
 
  public:
   //姿态
   //配置
   StructConfig configPID;
   //四轴电调频率
-  int ServosValue[4];
+  float ServosValue[4];
   //姿态目标
   float Targets[4];
   //PID
@@ -78,7 +78,7 @@ class Ccontrol
     return m_ypr.GetPitchPoint() - configPID.AdjustPitch;
   }
   float GetRoll(){
-    return m_ypr.GetRollPoint() - configPID.AdjustRoll;
+    return -(m_ypr.GetRollPoint() - configPID.AdjustRoll);
   }
   float GetYaw(){
     float v =  m_compass.GetPoint();
@@ -113,14 +113,27 @@ class Ccontrol
   }
 
   void MotionElevation(float v){
-    Targets[ELEVATION] += v/100;
-    if (Targets[ELEVATION]<0) Targets[ELEVATION] = 0;
+    m_power += v/100;
+    if (m_power<0) m_power = 0;
   }
 
   //飞行处理,姿态平衡
   void Flying(){
+    OptPitch();
+    OptRoll();
+    OptYaw();
+    //OptElevation();
+    WriteAllServos();
+    Serial.print("targets:");
     for(int i =0;i<4;i++){
       Serial.print(Targets[i]);
+      Serial.print("\t");
+    }
+    Serial.print("servos:");
+    for(int i =0;i<4;i++){
+      if (ServosValue[i]>ServoMin[i] +m_power) 
+        ServosValue[i]= ServoMin[i] +m_power;
+      Serial.print(ServosValue[i]);
       Serial.print("\t");
     }
     Serial.print("\n");
@@ -134,12 +147,24 @@ class Ccontrol
   }
 
   //着陆处理
-  void Landing(){
-    Serial.println("Landing");
+  void Landing(){ 
     m_power = 0;
     Targets[PITCH] = 0;
     Targets[ROLL] = 0;
     WriteAllServos();
+    
+    Serial.print("targets:");
+    for(int i =0;i<4;i++){
+      Serial.print(Targets[i]);
+      Serial.print("\t");
+    }
+    Serial.print("servos:");
+    for(int i =0;i<4;i++){ 
+      ServosValue[i] = UNLOCK_SERVO;
+      Serial.print(ServosValue[i]);
+      Serial.print("\t");
+    }
+    Serial.print("\n");
   }
 
   //配置写入rom
@@ -179,7 +204,7 @@ class Ccontrol
   void OptRoll() {
     m_PIDs[ROLL]->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
     m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
-    float v = GetPitch();
+    float v = GetRoll();
     v = m_PIDs[ROLL]->IncPIDCalc(v);
     ServosValue[LEFT] -= v;
     ServosValue[RIGHT] += v;
@@ -188,19 +213,19 @@ class Ccontrol
   void OptYaw() {
     m_PIDs[YAW]->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
     m_PIDs[YAW]->ReSetPoint(Targets[YAW]);
-    float v = GetPitch();
+    float v = GetYaw();
     v = m_PIDs[YAW]->IncPIDCalc(v);
-    ServosValue[FRONT] -= v;
-    ServosValue[AFTER] -= v;
-    ServosValue[LEFT] += v;
-    ServosValue[RIGHT] += v;
+    ServosValue[FRONT] += v;
+    ServosValue[AFTER] += v;
+    ServosValue[LEFT] -= v;
+    ServosValue[RIGHT] -= v;
   }
 
 
   void OptElevation() {
     m_PIDs[ELEVATION]->ReSetPID(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD);
     m_PIDs[ELEVATION]->ReSetPoint(Targets[ELEVATION]);
-    float v = GetPitch();
+    float v = GetElevation();
     v = m_PIDs[ELEVATION]->IncPIDCalc(v);
     ServosValue[FRONT] += v;
     ServosValue[AFTER] += v;
