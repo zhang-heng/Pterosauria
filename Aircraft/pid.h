@@ -27,25 +27,15 @@ class Cpid
   }
 
   double IncPIDCalc(double NextPoint){
-    register double thisError, incpid;
-    thisError = SetPoint - NextPoint;
-    double pError = thisError - LastError;
-    double iError = thisError;
-    double dError = thisError - 2*LastError + PrevError;
+    register double iError, iIncpid; //当前误差
+    iError = SetPoint - NextPoint; //增量计算
+    //E[k]项 - E[k－1]项 + E[k－2]项
+    iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError;
+    //存储误差，用于下次计算
     PrevError = LastError;
-    LastError = thisError;
-    incpid =Proportion*pError + Integral*iError + Derivative*dError;
-    return incpid;
-
-    //    register double iError, iIncpid; //当前误差
-    //    iError = SetPoint - NextPoint; //增量计算
-    //    //E[k]项 - E[k－1]项 + E[k－2]项
-    //    iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError;
-    //    //存储误差，用于下次计算
-    //    PrevError = LastError;
-    //    LastError = iError;
-    //    //返回增量值
-    //    return iIncpid;
+    LastError = iError;
+    //返回增量值
+    return iIncpid;
   }
 
   void ReSetPID(double p, double i, double d){

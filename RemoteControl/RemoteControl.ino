@@ -122,10 +122,11 @@ void loop(){
     conn->CommandByType(TYPE_TIME_SYN);
   }
 
-  lcd->Show(pitch, roll, yaw, 0);
+  lcd->Show(pitch, roll, yaw, ele);
   lcd->ShowPower(power);
   lcd->SetSignal(conn->GetSuccessCount());
-  SerialControl();
+  for(int i =0;i<10;i++)
+    SerialControl();
 }
 
 void SerialControl(){

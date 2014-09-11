@@ -81,9 +81,7 @@ class Ccontrol
     return -(m_ypr.GetRollPoint() - configPID.AdjustRoll);
   }
   float GetYaw(){
-    float v =  m_compass.GetPoint();
-    if (v>180) v-=360;
-    return v;
+    return  m_compass.GetPoint();
   }
   float GetElevation(){
     return m_power;//m_compass.GetPoint() - configPID.AdjustElevation;
@@ -122,17 +120,15 @@ class Ccontrol
     OptPitch();
     OptRoll();
     OptYaw();
-    //OptElevation();
     WriteAllServos();
+    //OptElevation();
     Serial.print("targets:");
     for(int i =0;i<4;i++){
       Serial.print(Targets[i]);
       Serial.print("\t");
     }
     Serial.print("servos:");
-    for(int i =0;i<4;i++){
-      if (ServosValue[i]>ServoMin[i] +m_power)
-        ServosValue[i]= ServoMin[i] +m_power;
+    for(int i =0;i<4;i++){ 
       Serial.print(ServosValue[i]);
       Serial.print("\t");
     }
@@ -197,8 +193,8 @@ class Ccontrol
     m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);
     float v = GetPitch();
     v = m_PIDs[PITCH]->IncPIDCalc(v);
-    ServosValue[FRONT] = m_power - v;
-    ServosValue[AFTER] = m_power + v;
+    ServosValue[FRONT] -= v;
+    ServosValue[AFTER] += v;
   }
 
   void OptRoll() {
@@ -206,8 +202,8 @@ class Ccontrol
     m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
     float v = GetRoll();
     v = m_PIDs[ROLL]->IncPIDCalc(v);
-    ServosValue[LEFT] = m_power - v;
-    ServosValue[RIGHT] = m_power + v;;
+    ServosValue[LEFT] -= v;
+    ServosValue[RIGHT] += v;
   }
 
   void OptYaw() {
@@ -220,7 +216,6 @@ class Ccontrol
     ServosValue[LEFT] -= v;
     ServosValue[RIGHT] -= v;
   }
-
 
   void OptElevation() {
     m_PIDs[ELEVATION]->ReSetPID(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD);
@@ -235,9 +230,10 @@ class Ccontrol
 
   void WriteAllServos(){
     for(int i =0;i<4;i++){
-      if(ServosValue[i] > m_power) ServosValue[i] = m_power;
-      if(ServosValue[i] > MAX_SERVO) ServosValue[i] = MAX_SERVO;
+      float incr = ServosValue[i];
       if(ServosValue[i] < ServoMin[i]) ServosValue[i] = ServoMin[i];
+      if(ServosValue[i] > ServoMin[i] + m_power) ServosValue[i] = ServoMin[i] + m_power; 
+      if(ServosValue[i] > MAX_SERVO) ServosValue[i] = MAX_SERVO;
     }
   }
 };
