@@ -24,7 +24,7 @@ class Ccontrol
   Cypr m_ypr;              //读取MPU6050值,此陀螺仪有效的是倾斜值
   Cbarometer m_barometer;  //读取气压,暂时不用,精度太差
   Ccompass m_compass;      //读取HMC5883L值,此磁感获取航向
-  Csonar m_sonar();   //声呐获取对地高度,相对气压值精准
+  Csonar m_sonar();        //声呐获取对地高度,相对气压值精准
 
   //正在着陆
   bool m_landing;
@@ -59,7 +59,7 @@ class Ccontrol
     ServoMin[0] = 1050;
     ServoMin[1] = 1050;
     ServoMin[2] = 800;
-    ServoMin[3] = 1010; 
+    ServoMin[3] = 1010;
     for(int i =0;i<4;i++){
       Servos[i].attach(ServoPins[i]);
       ServosValue[i] = UNLOCK_SERVO;
@@ -106,15 +106,15 @@ class Ccontrol
     Targets[ROLL] = map (v, -100, 100, -15, 15);//映射为15度调整
   }
 
-  void MotionYaw(float v){
-    Targets[YAW] += v/100;
-    if (Targets[YAW]<0) Targets[YAW] += 360;
-    if (Targets[YAW]>360) Targets[YAW] -= 360;
-  }
-
   void MotionElevation(float v){
     m_power += v/100;
     if (m_power<0) m_power = 0;
+  }
+
+  void MotionYaw(float v){
+    Targets[YAW] = GetYaw() + v/10;
+    if (Targets[YAW]<0) Targets[YAW] += 360;
+    if (Targets[YAW]>360) Targets[YAW] -= 360;
   }
 
   //飞行处理,姿态平衡
@@ -131,7 +131,7 @@ class Ccontrol
     }
     Serial.print("servos:");
     for(int i =0;i<4;i++){
-      if (ServosValue[i]>ServoMin[i] +m_power) 
+      if (ServosValue[i]>ServoMin[i] +m_power)
         ServosValue[i]= ServoMin[i] +m_power;
       Serial.print(ServosValue[i]);
       Serial.print("\t");
@@ -147,19 +147,19 @@ class Ccontrol
   }
 
   //着陆处理
-  void Landing(){ 
+  void Landing(){
     m_power = 0;
     Targets[PITCH] = 0;
     Targets[ROLL] = 0;
     WriteAllServos();
-    
+
     Serial.print("targets:");
     for(int i =0;i<4;i++){
       Serial.print(Targets[i]);
       Serial.print("\t");
     }
     Serial.print("servos:");
-    for(int i =0;i<4;i++){ 
+    for(int i =0;i<4;i++){
       ServosValue[i] = UNLOCK_SERVO;
       Serial.print(ServosValue[i]);
       Serial.print("\t");
@@ -197,8 +197,8 @@ class Ccontrol
     m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);
     float v = GetPitch();
     v = m_PIDs[PITCH]->IncPIDCalc(v);
-    ServosValue[FRONT] -= v;
-    ServosValue[AFTER] += v;
+    ServosValue[FRONT] = m_power - v;
+    ServosValue[AFTER] = m_power + v;
   }
 
   void OptRoll() {
@@ -206,8 +206,8 @@ class Ccontrol
     m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
     float v = GetRoll();
     v = m_PIDs[ROLL]->IncPIDCalc(v);
-    ServosValue[LEFT] -= v;
-    ServosValue[RIGHT] += v;
+    ServosValue[LEFT] = m_power - v;
+    ServosValue[RIGHT] = m_power + v;;
   }
 
   void OptYaw() {
@@ -232,11 +232,12 @@ class Ccontrol
     ServosValue[LEFT] += v;
     ServosValue[RIGHT] += v;
   }
- 
+
   void WriteAllServos(){
     for(int i =0;i<4;i++){
-    if(ServosValue[i]>MAX_SERVO) ServosValue[i] = MAX_SERVO;
-    if(ServosValue[i]<ServoMin[i]) ServosValue[i] = ServoMin[i];
+      if(ServosValue[i] > m_power) ServosValue[i] = m_power;
+      if(ServosValue[i] > MAX_SERVO) ServosValue[i] = MAX_SERVO;
+      if(ServosValue[i] < ServoMin[i]) ServosValue[i] = ServoMin[i];
     }
   }
 };
