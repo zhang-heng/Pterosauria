@@ -26,16 +26,37 @@ class Cpid
     SetPoint = 0;
   }
 
-  double IncPIDCalc(double NextPoint){
+  double IncPIDCalc(double NextPoint){     
+    
+    double  dError, Error;
+    Error = SetPoint -  NextPoint;          // 偏差  
+    SumError += Error;                   // 积分  
+    dError = LastError - PrevError;     // 当前微分  
+    PrevError = LastError;  
+    LastError = Error;  
+    if(SumError>1000) SumError = 1000;
+    if(SumError<-1000) SumError = -1000;
+    Serial.print(SumError);
+    Serial.print("\t");
+    Serial.print(dError);
+    Serial.print("\n");
+    return (Proportion * Error               // 比例项  
+        + Integral * SumError              // 积分项  
+        + Derivative * dError);              // 微分项  
+        
     register double iError, iIncpid; //当前误差
     iError = SetPoint - NextPoint; //增量计算
-    //E[k]项 - E[k－1]项 + E[k－2]项
-    iIncpid = Proportion * iError - Integral * LastError + Derivative * PrevError;
+    //E[k]项 - E[k－1]项 + E[k－2]项 
+    iIncpid = Proportion  * iError
+    - Integral * iError 
+    + Derivative * (iError - 2*LastError + PrevError);
     //存储误差，用于下次计算
     PrevError = LastError;
     LastError = iError;
     //返回增量值
     return iIncpid;
+    
+        
   }
 
   void ReSetPID(double p, double i, double d){

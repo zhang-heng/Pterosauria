@@ -57,12 +57,11 @@ class Cypr
       Serial.print(devStatus);
       Serial.println(F(")"));
     }
-  }
-
+  } 
+  
   void FlushYPR(){
     if (!dmpReady) return;
     if (!mpuInterrupt && fifoCount < packetSize) return;
-
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
     fifoCount = mpu.getFIFOCount();
@@ -76,7 +75,7 @@ class Cypr
       fifoCount -= packetSize;
       mpu.dmpGetQuaternion(&q, fifoBuffer);
       mpu.dmpGetGravity(&gravity, &q);
-      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);    
     }
   }
 

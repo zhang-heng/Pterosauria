@@ -105,7 +105,7 @@ class Ccontrol
   }
 
   void MotionElevation(float v){
-    m_power += v/100;
+    m_power += v/100; 
     if (m_power<0) m_power = 0;
   }
 
@@ -113,26 +113,19 @@ class Ccontrol
     Targets[YAW] = GetYaw() + v/10;
     if (Targets[YAW]<0) Targets[YAW] += 360;
     if (Targets[YAW]>360) Targets[YAW] -= 360;
-  }
-
+  } 
+  ulong m_lastOptTime = 0;
   //飞行处理,姿态平衡
   void Flying(){
-    OptPitch();
-    OptRoll();
-    OptYaw();
-    WriteAllServos();
-    //OptElevation();
-    Serial.print("targets:");
-    for(int i =0;i<4;i++){
-      Serial.print(Targets[i]);
-      Serial.print("\t");
+    ulong currentTime = millis();
+    if(currentTime - m_lastOptTime > 50){
+      m_lastOptTime = currentTime;
+      OptPitch();
+      //OptRoll();
+      //OptYaw();
+      WriteAllServos();
+      //OptElevation();
     }
-    Serial.print("servos:");
-    for(int i =0;i<4;i++){ 
-      Serial.print(ServosValue[i]);
-      Serial.print("\t");
-    }
-    Serial.print("\n");
   }
 
   //自稳
@@ -147,20 +140,10 @@ class Ccontrol
     m_power = 0;
     Targets[PITCH] = 0;
     Targets[ROLL] = 0;
-    WriteAllServos();
-
-    Serial.print("targets:");
     for(int i =0;i<4;i++){
-      Serial.print(Targets[i]);
-      Serial.print("\t");
+      ServosValue[i] = 0;
+      Servos[i].writeMicroseconds(UNLOCK_SERVO);
     }
-    Serial.print("servos:");
-    for(int i =0;i<4;i++){
-      ServosValue[i] = UNLOCK_SERVO;
-      Serial.print(ServosValue[i]);
-      Serial.print("\t");
-    }
-    Serial.print("\n");
   }
 
   //配置写入rom
@@ -173,7 +156,7 @@ class Ccontrol
     float p = m_ypr.GetPitchPoint();
     float r = m_ypr.GetRollPoint();
     float y = m_compass.GetPoint();
-    for (int i = 0 ; i < 100; i++){
+    for (int i = 0 ; i < 20; i++){
       p = (p + m_ypr.GetPitchPoint()) / 2;
       r = (r + m_ypr.GetRollPoint()) / 2;
       y = (y + m_compass.GetPoint()) / 2;
@@ -193,8 +176,8 @@ class Ccontrol
     m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);
     float v = GetPitch();
     v = m_PIDs[PITCH]->IncPIDCalc(v);
-    ServosValue[FRONT] -= v;
-    ServosValue[AFTER] += v;
+    ServosValue[FRONT] =m_power -  v;
+    ServosValue[AFTER] =m_power + v;
   }
 
   void OptRoll() {
@@ -202,8 +185,8 @@ class Ccontrol
     m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
     float v = GetRoll();
     v = m_PIDs[ROLL]->IncPIDCalc(v);
-    ServosValue[LEFT] -= v;
-    ServosValue[RIGHT] += v;
+    ServosValue[LEFT] = m_power;
+    ServosValue[RIGHT] -= v;
   }
 
   void OptYaw() {
@@ -212,12 +195,12 @@ class Ccontrol
     float v = GetYaw();
     v = m_PIDs[YAW]->IncPIDCalc(v);
     ServosValue[FRONT] += v;
-    ServosValue[AFTER] += v;
-    ServosValue[LEFT] -= v;
+    //ServosValue[AFTER] += v;
+    //ServosValue[LEFT] -= v;
     ServosValue[RIGHT] -= v;
   }
 
-  void OptElevation() {
+  void OptElevation() {    
     m_PIDs[ELEVATION]->ReSetPID(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD);
     m_PIDs[ELEVATION]->ReSetPoint(Targets[ELEVATION]);
     float v = GetElevation();
@@ -230,10 +213,10 @@ class Ccontrol
 
   void WriteAllServos(){
     for(int i =0;i<4;i++){
-      float incr = ServosValue[i];
-      if(ServosValue[i] < ServoMin[i]) ServosValue[i] = ServoMin[i];
-      if(ServosValue[i] > ServoMin[i] + m_power) ServosValue[i] = ServoMin[i] + m_power; 
+      if(ServosValue[i] < 0) ServosValue[i] = 0;
+      if(ServosValue[i] > 2 * m_power) ServosValue[i] = 2 * m_power; 
       if(ServosValue[i] > MAX_SERVO) ServosValue[i] = MAX_SERVO;
+      Servos[i].writeMicroseconds(ServosValue[i] + ServoMin[i]);
     }
   }
 };

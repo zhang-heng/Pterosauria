@@ -39,14 +39,23 @@ void setup()
 NetStruct msg;
 ulong lastRecvTime =0;
 
+bool b_flying = false;
+
+ulong lastSecondHandleTime =0;
+int loopCount =0;
 //循环体
 void loop()
 {
-  DebugShow();
   //刷新传感器
   pControl->FlushSensors();
   ulong currentTime = millis();
-
+  loopCount++;
+  if(currentTime-lastSecondHandleTime>1000){
+    lastSecondHandleTime=currentTime;
+    Serial.println(loopCount);
+    loopCount = 0;
+    DebugShow();
+  }
   //循环过程中频繁访问网络,以免遥控端延迟丢包.
   for (int i = 0; i < 10; i++){
     conn->Read(&msg);
@@ -65,18 +74,19 @@ void loop()
       break;
 
     case TYPE_FLY://解锁电调处理飞行
-      pControl->Flying();
+      b_flying = true;
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_SELF_STATIONARY://自稳
+      b_flying = true;
       pControl->SelfStationary();
       vf =  0;
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
     case TYPE_LAND://着陆
-      pControl->Landing();
+      b_flying = false;
       conn->Send(&msg);
       break;
     case TYPE_INIT_BALANCE://平衡初始化
@@ -220,14 +230,16 @@ void loop()
       break;
     }
   }
-
+  if (b_flying) 
+      pControl->Flying();
+  else
+      pControl->Landing();
+  
   //1s未收到数据,在飞行状态则进入悬停.
   if (currentTime - lastRecvTime > 1000){
     pControl->Landing();
     //pControl->SelfStationary();
   }
-  for(int i =0; i<4 ;i++)
-    pControl->Servos[i].writeMicroseconds(pControl->ServosValue[i]);
 }
 
 void DebugShow(){
@@ -273,6 +285,18 @@ void DebugShow(){
     Serial.print("\t");
     Serial.print(pControl->ServosValue[i]);
   }
+  Serial.print("targets:");
+  for(int i =0;i<4;i++){
+    Serial.print(pControl->Targets[i]);
+    Serial.print("\t");
+  }
+  Serial.print("servos:");
+  for(int i =0;i<4;i++){
+    pControl->ServosValue[i] = UNLOCK_SERVO;
+    Serial.print(pControl->ServosValue[i]);
+    Serial.print("\t");
+  }
   Serial.print("\n");
+  
 }
 
