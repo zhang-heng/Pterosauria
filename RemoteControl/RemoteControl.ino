@@ -137,6 +137,13 @@ void SerialControl(){
   case 'w':conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);break;
   case '3':conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);break;
   case 'e':conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);break;
+  case '!':conn->GetValueByType(TYPE_PITCH_P, 0.1,pitchP);break;
+  case 'Q':conn->GetValueByType(TYPE_PITCH_P, -0.1,pitchP);break;
+  case '@':conn->GetValueByType(TYPE_PITCH_I, 0.1,pitchI);break;
+  case 'W':conn->GetValueByType(TYPE_PITCH_I, -0.1,pitchI);break;
+  case '#':conn->GetValueByType(TYPE_PITCH_D, 0.1,pitchD);break;
+  case 'E':conn->GetValueByType(TYPE_PITCH_D, -0.1,pitchD);break;
+  
   case '4':conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);break;
   case 'r':conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);break;
   case '5':conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);break;

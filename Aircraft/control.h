@@ -56,10 +56,10 @@ class Ccontrol
     ServoPins[1] = 9;
     ServoPins[2] = 6;
     ServoPins[3] = 10;
-    ServoMin[0] = 1050;
-    ServoMin[1] = 1050;
-    ServoMin[2] = 800;
-    ServoMin[3] = 1010;
+    ServoMin[0] = 1060;
+    ServoMin[1] = 1060;
+    ServoMin[2] = 810;
+    ServoMin[3] = 1020;
     for(int i =0;i<4;i++){
       Servos[i].attach(ServoPins[i]);
       ServosValue[i] = UNLOCK_SERVO;
@@ -118,7 +118,7 @@ class Ccontrol
   //飞行处理,姿态平衡
   void Flying(){
     ulong currentTime = millis();
-    if(currentTime - m_lastOptTime > 50){
+    if(currentTime - m_lastOptTime > 20){
       m_lastOptTime = currentTime;
       OptPitch();
       //OptRoll();
@@ -214,8 +214,8 @@ class Ccontrol
   void WriteAllServos(){
     for(int i =0;i<4;i++){
       if(ServosValue[i] < 0) ServosValue[i] = 0;
-      if(ServosValue[i] > 2 * m_power) ServosValue[i] = 2 * m_power; 
-      if(ServosValue[i] > MAX_SERVO) ServosValue[i] = MAX_SERVO;
+      if(ServosValue[i] > m_power + 100) ServosValue[i] = m_power + 100; 
+      if(ServosValue[i] > MAX_SERVO - ServoMin[i]) ServosValue[i] = MAX_SERVO - ServoMin[i];
       Servos[i].writeMicroseconds(ServosValue[i] + ServoMin[i]);
     }
   }
