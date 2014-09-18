@@ -1,6 +1,6 @@
 class Cleds
 {
-public:
+ public:
   int m_LatchPin;
   int m_DataPin;
   int m_ClockPin;
@@ -26,18 +26,18 @@ public:
     m_Light = false;
     m_Value =0;
     HeaderMask = 0x0004;
-    
+
     LeftMask[0] =0x8000;
     LeftMask[1] =0x4000;
     LeftMask[2] =0x2000;
     LeftMask[3] =0x1000;
-    LeftMask[4] =0x0800; 
-    
+    LeftMask[4] =0x0800;
+
     RightMask[0] =0x0080;
     RightMask[1] =0x0040;
     RightMask[2] =0x0020;
     RightMask[3] =0x0010;
-    RightMask[4] =0x0008;      
+    RightMask[4] =0x0008;
     m_LatchPin = latchPin;
     m_DataPin = dataPin;
     m_ClockPin = clockPin;
@@ -55,42 +55,42 @@ public:
     m_Value &=~HeaderMask;
     Handle();
   }
-  
+
   void PitchBlink(){
     m_Value^= LeftMask[0];
     Handle();
   }
-  
+
   void PitchOff(){
     m_Value &=~LeftMask[0];
     Handle();
   }
-  
+
   void RollBlink(){
     m_Value^= LeftMask[1];
     Handle();
   }
-  
+
   void RollOff(){
     m_Value &=~LeftMask[1];
     Handle();
   }
-  
+
   void EleBlink(){
     m_Value^= RightMask[0];
     Handle();
   }
-  
+
   void EleOff(){
     m_Value &=~RightMask[0];
     Handle();
   }
-  
+
   void YawBlink(){
     m_Value^= RightMask[1];
     Handle();
   }
-  
+
   void YawOff(){
     m_Value &=~RightMask[1];
     Handle();
@@ -105,6 +105,3 @@ public:
     Handle();
   }
 };
-
-
-

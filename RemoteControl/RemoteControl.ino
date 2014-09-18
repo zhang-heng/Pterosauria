@@ -65,10 +65,6 @@ void loop(){
   conn->GetValueByType(TYPE_YAW_CURRENT, yaw);
   conn->GetValueByType(TYPE_ELEVATION_CURRENT, ele);
 
-  ulong  stickv [4] = {
-    cc.lx, cc.ly, cc.rx, cc.ry
-  };
-
   if (bs.b3){
     conn->CommandByType(TYPE_WRITE_CONFIG);
   }
@@ -93,19 +89,19 @@ void loop(){
       if(cc.lx) {
         conn->SetValueByType(TYPE_ROLL_DESIRED, cc.lx);
         leds->RollBlink();
-        }else leds->RollOff();
-      if(cc.ly){ 
+      }else leds->RollOff();
+      if(cc.ly){
         conn->SetValueByType(TYPE_PITCH_DESIRED, cc.ly);
         leds->PitchBlink();
-        }else leds->PitchOff();
+      }else leds->PitchOff();
       if(cc.rx) {
         conn->SetValueByType(TYPE_YAW_DESIRED, cc.rx);
         leds->YawBlink();
-        }else leds->YawOff();
+      }else leds->YawOff();
       if(cc.ry) {
         conn->SetValueByType(TYPE_ELEVATION_DESIRED, cc.ry);
         leds->EleBlink();
-        }else leds->EleOff();
+      }else leds->EleOff();
     }
     else{
       leds->NetOn();
@@ -143,7 +139,7 @@ void SerialControl(){
   case 'W':conn->GetValueByType(TYPE_PITCH_I, -0.1,pitchI);break;
   case '#':conn->GetValueByType(TYPE_PITCH_D, 0.1,pitchD);break;
   case 'E':conn->GetValueByType(TYPE_PITCH_D, -0.1,pitchD);break;
-  
+
   case '4':conn->GetValueByType(TYPE_ROLL_P, 0.01,rollP);break;
   case 'r':conn->GetValueByType(TYPE_ROLL_P, -0.01,rollP);break;
   case '5':conn->GetValueByType(TYPE_ROLL_I, 0.01,rollI);break;
@@ -164,19 +160,19 @@ void SerialControl(){
   case ']':conn->GetValueByType(TYPE_ELEVATION_D, -0.01,eleD);break;
   case -1: return;
   }
-  
-  conn->GetValueByType(TYPE_PITCH_P, 0,pitchP); 
+
+  conn->GetValueByType(TYPE_PITCH_P, 0,pitchP);
   conn->GetValueByType(TYPE_PITCH_I, 0,pitchI);
   conn->GetValueByType(TYPE_PITCH_D, 0,pitchD);
   conn->GetValueByType(TYPE_ROLL_P, 0,rollP);
-  conn->GetValueByType(TYPE_ROLL_I, 0,rollI); 
-  conn->GetValueByType(TYPE_ROLL_D, 0,rollD); 
-  conn->GetValueByType(TYPE_YAW_P, 0,yawP); 
-  conn->GetValueByType(TYPE_YAW_I, 0,yawI); 
-  conn->GetValueByType(TYPE_YAW_D, 0,yawD); 
-  conn->GetValueByType(TYPE_ELEVATION_P, 0,eleP); 
-  conn->GetValueByType(TYPE_ELEVATION_I, 0,eleI); 
-  conn->GetValueByType(TYPE_ELEVATION_D, 0,eleD); 
+  conn->GetValueByType(TYPE_ROLL_I, 0,rollI);
+  conn->GetValueByType(TYPE_ROLL_D, 0,rollD);
+  conn->GetValueByType(TYPE_YAW_P, 0,yawP);
+  conn->GetValueByType(TYPE_YAW_I, 0,yawI);
+  conn->GetValueByType(TYPE_YAW_D, 0,yawD);
+  conn->GetValueByType(TYPE_ELEVATION_P, 0,eleP);
+  conn->GetValueByType(TYPE_ELEVATION_I, 0,eleI);
+  conn->GetValueByType(TYPE_ELEVATION_D, 0,eleD);
   Serial.print("pitchPID:");
   Serial.print(pitchP);Serial.print("\t");
   Serial.print(pitchI);Serial.print("\t");

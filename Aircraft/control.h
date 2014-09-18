@@ -32,6 +32,8 @@ class Ccontrol
   bool m_flying;
   //推力?油门?
   float m_power;
+  //姿态调整时间
+  ulong m_lastOptTime;
 
  public:
   //姿态
@@ -68,6 +70,7 @@ class Ccontrol
       Targets[i] = 0;
     }
     m_power = 0;
+    m_lastOptTime = 0;
     m_ypr.Init();
     //获取rom配置
     ReadRom(&configPID);
@@ -95,7 +98,6 @@ class Ccontrol
   }
 
   //姿态修改
-  //pitch roll 为绝对调整, yaw和ele是增量式
   void MotionPitch(float v){
     Targets[PITCH] = map (v, -100, 100, -15, 15);//映射为15度调整
   }
@@ -105,7 +107,7 @@ class Ccontrol
   }
 
   void MotionElevation(float v){
-    m_power += v/100; 
+    m_power += v/100;
     if (m_power<0) m_power = 0;
   }
 
@@ -113,16 +115,16 @@ class Ccontrol
     Targets[YAW] = GetYaw() + v/10;
     if (Targets[YAW]<0) Targets[YAW] += 360;
     if (Targets[YAW]>360) Targets[YAW] -= 360;
-  } 
-  ulong m_lastOptTime = 0;
+  }
+
   //飞行处理,姿态平衡
   void Flying(){
     ulong currentTime = millis();
     if(currentTime - m_lastOptTime > 20){
       m_lastOptTime = currentTime;
       OptPitch();
-      //OptRoll();
-      //OptYaw();
+      OptRoll();
+      OptYaw();
       WriteAllServos();
       //OptElevation();
     }
@@ -167,44 +169,41 @@ class Ccontrol
     configPID.AdjustYaw = y;
   }
 
-  /* void TrimmingTarget(double pitch, double roll, double yaw, double elevation) { */
-  /* } */
-
   //计算调整值
   void OptPitch() {
     m_PIDs[PITCH]->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
     m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);
     float v = GetPitch();
-    v = m_PIDs[PITCH]->IncPIDCalc(v);
-    ServosValue[FRONT] =m_power -  v;
-    ServosValue[AFTER] =m_power + v;
+    v = m_PIDs[PITCH]->PIDCalc(v);
+    ServosValue[FRONT] = m_power - v;
+    ServosValue[AFTER] = m_power + v;
   }
 
   void OptRoll() {
     m_PIDs[ROLL]->ReSetPID(configPID.RollP, configPID.RollI, configPID.RollD);
     m_PIDs[ROLL]->ReSetPoint(Targets[ROLL]);
     float v = GetRoll();
-    v = m_PIDs[ROLL]->IncPIDCalc(v);
-    ServosValue[LEFT] = m_power;
-    ServosValue[RIGHT] -= v;
+    v = m_PIDs[ROLL]->PIDCalc(v);
+    ServosValue[LEFT] = m_power + v;
+    ServosValue[RIGHT] = m_power - v;
   }
 
   void OptYaw() {
     m_PIDs[YAW]->ReSetPID(configPID.YawP, configPID.YawI, configPID.YawD);
-    m_PIDs[YAW]->ReSetPoint(Targets[YAW]);
-    float v = GetYaw();
-    v = m_PIDs[YAW]->IncPIDCalc(v);
+    m_PIDs[YAW]->ReSetPoint(Targets[YAW] - 180.00);
+    float v = GetYaw() - 180;
+    v = m_PIDs[YAW]->PIDCalc(v);
     ServosValue[FRONT] += v;
-    //ServosValue[AFTER] += v;
-    //ServosValue[LEFT] -= v;
+    ServosValue[AFTER] += v;
+    ServosValue[LEFT] -= v;
     ServosValue[RIGHT] -= v;
   }
 
-  void OptElevation() {    
+  void OptElevation() {
     m_PIDs[ELEVATION]->ReSetPID(configPID.ElevationP, configPID.ElevationI, configPID.ElevationD);
     m_PIDs[ELEVATION]->ReSetPoint(Targets[ELEVATION]);
     float v = GetElevation();
-    v = m_PIDs[ELEVATION]->IncPIDCalc(v);
+    v = m_PIDs[ELEVATION]->PIDCalc(v);
     ServosValue[FRONT] += v;
     ServosValue[AFTER] += v;
     ServosValue[LEFT] += v;
@@ -214,7 +213,7 @@ class Ccontrol
   void WriteAllServos(){
     for(int i =0;i<4;i++){
       if(ServosValue[i] < 0) ServosValue[i] = 0;
-      if(ServosValue[i] > m_power + 100) ServosValue[i] = m_power + 100; 
+      if(ServosValue[i] > m_power + 100) ServosValue[i] = m_power + 100;//力度阈限制
       if(ServosValue[i] > MAX_SERVO - ServoMin[i]) ServosValue[i] = MAX_SERVO - ServoMin[i];
       Servos[i].writeMicroseconds(ServosValue[i] + ServoMin[i]);
     }

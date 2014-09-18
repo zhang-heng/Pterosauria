@@ -98,39 +98,39 @@ void loop()
 
       //期望姿态调整
     case TYPE_PITCH_DESIRED://调整俯仰状态
-      pControl->MotionPitch(*(float*)&msg.value); 
+      pControl->MotionPitch(*(float*)&msg.value);
       conn->Send(&msg);
       break;
     case TYPE_ROLL_DESIRED://调整横滚状态
-      pControl->MotionRoll(*(float*)&msg.value); 
+      pControl->MotionRoll(*(float*)&msg.value);
       conn->Send(&msg);
       break;
     case TYPE_YAW_DESIRED://调整航向状态
-      pControl->MotionYaw(*(float*)&msg.value); 
+      pControl->MotionYaw(*(float*)&msg.value);
       conn->Send(&msg);
       break;
     case TYPE_ELEVATION_DESIRED://调整高度状态
       pControl->MotionElevation(*(float*)&msg.value);
       conn->Send(&msg);
       break;
-      
+
       //当前姿态获取
-    case TYPE_PITCH_CURRENT://获取当前俯仰状态 
+    case TYPE_PITCH_CURRENT://获取当前俯仰状态
       vf =  pControl->GetPitch();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_ROLL_CURRENT://获取当前横滚状态 
+    case TYPE_ROLL_CURRENT://获取当前横滚状态
       vf = pControl->GetRoll();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_YAW_CURRENT://获取当前航向状态 
+    case TYPE_YAW_CURRENT://获取当前航向状态
       vf = pControl->GetYaw();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       break;
-    case TYPE_ELEVATION_CURRENT://获取当前高度状态 
+    case TYPE_ELEVATION_CURRENT://获取当前高度状态
       vf = pControl->GetElevation();
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
@@ -230,11 +230,11 @@ void loop()
       break;
     }
   }
-  if (b_flying) 
-      pControl->Flying();
+  if (b_flying)
+    pControl->Flying();
   else
-      pControl->Landing();
-  
+    pControl->Landing();
+
   //1s未收到数据,在飞行状态则进入悬停.
   if (currentTime - lastRecvTime > 1000){
     pControl->Landing();
@@ -270,17 +270,17 @@ void DebugShow(){
     pControl->ServosValue[3]--;
     break;
   }
-  Serial.print("prye"); 
-  Serial.print("\t"); 
+  Serial.print("prye");
+  Serial.print("\t");
   Serial.print(pControl->GetPitch());
   Serial.print("\t");
   Serial.print(pControl->GetRoll());
   Serial.print("\t");
   Serial.print(pControl->GetYaw());
   Serial.print("\t");
-  Serial.print(pControl->GetElevation()); 
+  Serial.print(pControl->GetElevation());
   Serial.print("\t");
-  Serial.print("servos"); 
+  Serial.print("servos");
   for(int i =0;i<4;i++){
     Serial.print("\t");
     Serial.print(pControl->ServosValue[i]);
@@ -297,6 +297,5 @@ void DebugShow(){
     Serial.print("\t");
   }
   Serial.print("\n");
-  
-}
 
+}
