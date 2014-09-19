@@ -58,10 +58,10 @@ class Ccontrol
     ServoPins[1] = 9;
     ServoPins[2] = 6;
     ServoPins[3] = 10;
-    ServoMin[0] = 1060;
-    ServoMin[1] = 1060;
-    ServoMin[2] = 810;
-    ServoMin[3] = 1020;
+    ServoMin[0] = 1049;
+    ServoMin[1] = 1049;
+    ServoMin[2] = 1014;
+    ServoMin[3] = 796;
     for(int i =0;i<4;i++){
       Servos[i].attach(ServoPins[i]);
       ServosValue[i] = UNLOCK_SERVO;
@@ -99,15 +99,15 @@ class Ccontrol
 
   //姿态修改
   void MotionPitch(float v){
-    Targets[PITCH] = map (v, -100, 100, -15, 15);//映射为15度调整
+    Targets[PITCH] = map (v, -100, 100, -30, 30);//映射为15度调整
   }
 
   void MotionRoll(float v){
-    Targets[ROLL] = map (v, -100, 100, -15, 15);//映射为15度调整
+    Targets[ROLL] = map (v, -100, 100, -30, 30);//映射为15度调整
   }
 
   void MotionElevation(float v){
-    m_power += v/100;
+    m_power += v/10;
     if (m_power<0) m_power = 0;
   }
 
@@ -170,6 +170,7 @@ class Ccontrol
   }
 
   //计算调整值
+  //0.90 0.37 2.60 | 1.00 0.31 2.89
   void OptPitch() {
     m_PIDs[PITCH]->ReSetPID(configPID.PitchP, configPID.PitchI, configPID.PitchD);
     m_PIDs[PITCH]->ReSetPoint(Targets[PITCH]);

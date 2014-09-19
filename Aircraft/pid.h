@@ -32,7 +32,7 @@ class Cpid
     Serial.print(SumError);
     return (Proportion * Error               // 比例项
             + Integral * SumError * 0.1      // 积分项
-            + Derivative * dError);          // 微分项
+            + Derivative * dError* 10);      // 微分项
   }
 
   void ReSetPID(double p, double i, double d){

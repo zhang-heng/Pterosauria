@@ -64,7 +64,7 @@ class Clcd
     srlcd->setCursor(0, 1);
     srlcd->write(PIC_PITCH);
     srlcd->print(abs(v));
-    srlcd->print("  ");
+    Interval(v);
   }
 
   void ShowI(int v){
@@ -74,7 +74,7 @@ class Clcd
     srlcd->setCursor(4, 1);
     srlcd->write(PIC_ROLL);
     srlcd->print(abs(v));
-    srlcd->print("  ");
+    Interval(v);
   }
 
   void ShowY(int v){
@@ -84,7 +84,7 @@ class Clcd
     srlcd->setCursor(8, 1);
     srlcd->write(PIC_YAW);
     srlcd->print(abs(v));
-    srlcd->print("  ");
+    Interval(v);
   }
 
   void ShowE(int v){
@@ -94,6 +94,12 @@ class Clcd
     srlcd->setCursor(12, 1);
     srlcd->write(PIC_ELEVATION);
     srlcd->print(abs(v));
-    srlcd->print("  ");
+    Interval(v);
+  }
+  
+  void Interval(int v){
+    if (v/100) srlcd->print("");
+    else if (v/10) srlcd->print(" ");
+    else srlcd->print("  ");
   }
 };

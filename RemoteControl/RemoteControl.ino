@@ -133,10 +133,6 @@ void SerialControl(){
   case 'w':conn->GetValueByType(TYPE_PITCH_I, -0.01,pitchI);break;
   case '3':conn->GetValueByType(TYPE_PITCH_D, 0.01,pitchD);break;
   case 'e':conn->GetValueByType(TYPE_PITCH_D, -0.01,pitchD);break;
-  case '!':conn->GetValueByType(TYPE_PITCH_P, 0.1,pitchP);break;
-  case 'Q':conn->GetValueByType(TYPE_PITCH_P, -0.1,pitchP);break;
-  case '@':conn->GetValueByType(TYPE_PITCH_I, 0.1,pitchI);break;
-  case 'W':conn->GetValueByType(TYPE_PITCH_I, -0.1,pitchI);break;
   case '#':conn->GetValueByType(TYPE_PITCH_D, 0.1,pitchD);break;
   case 'E':conn->GetValueByType(TYPE_PITCH_D, -0.1,pitchD);break;
 
@@ -146,6 +142,9 @@ void SerialControl(){
   case 't':conn->GetValueByType(TYPE_ROLL_I, -0.01,rollI);break;
   case '6':conn->GetValueByType(TYPE_ROLL_D, 0.01,rollD);break;
   case 'y':conn->GetValueByType(TYPE_ROLL_D, -0.01,rollD);break;
+  case '^':conn->GetValueByType(TYPE_ROLL_D, 0.1,rollD);break;
+  case 'Y':conn->GetValueByType(TYPE_ROLL_D, -0.1,rollD);break;
+  
   case '7':conn->GetValueByType(TYPE_YAW_P, 0.01,yawP);break;
   case 'u':conn->GetValueByType(TYPE_YAW_P, -0.01,yawP);break;
   case '8':conn->GetValueByType(TYPE_YAW_I, 0.01,yawI);break;

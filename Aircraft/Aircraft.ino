@@ -89,13 +89,12 @@ void loop()
       b_flying = false;
       conn->Send(&msg);
       break;
-    case TYPE_INIT_BALANCE://平衡初始化
+    case TYPE_INIT_BALANCE://平衡校正
       vf =  0;
       msg.value = *(ulong*)& vf;
       conn->Send(&msg);
       pControl->BalanceAdjust();
       break;
-
       //期望姿态调整
     case TYPE_PITCH_DESIRED://调整俯仰状态
       pControl->MotionPitch(*(float*)&msg.value);
