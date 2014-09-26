@@ -213,10 +213,11 @@ class Ccontrol
 
   void WriteAllServos(){
     for(int i =0;i<4;i++){
+      if(ServosValue[i] > m_power + 100) ServosValue[i] = m_power + 100;//力度阈限
       if(ServosValue[i] < 0) ServosValue[i] = 0;
-      if(ServosValue[i] > m_power + 100) ServosValue[i] = m_power + 100;//力度阈限制
-      if(ServosValue[i] > MAX_SERVO - ServoMin[i]) ServosValue[i] = MAX_SERVO - ServoMin[i];
-      Servos[i].writeMicroseconds(ServosValue[i] + ServoMin[i]);
+      if(ServosValue[i] > 1000) ServosValue[i] = 1000;
+      int Motor = map(ServosValue[i], 0, 1000, ServoMin[i], MAX_SERVO); 
+      Servos[i].writeMicroseconds(Motor);
     }
   }
 };
